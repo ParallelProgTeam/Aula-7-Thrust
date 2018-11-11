@@ -16,6 +16,7 @@ Ao declarar um vetor de host ou dispositivo, você deve fornecer o tipo de dados
 - Para criar e inicializar um vetor de dispositivo a partir de um vetor Thrust existente: thrust::device_vector <type> d_vec = h_vec;
    
 Nos bastidores, o Thrust manipulará a alocação de espaço no dispositivo que tem o mesmo tamanho de h_vec, além de copiar a memória do host para o dispositivo.
+### Exercício 1: Declare os vetores H e D e inicialíze-os com os valores indicados em cada linha em que aparece um #FIXME:
 ```cpp
 #include <thrust/host_vector.h>
 #include <thrust/device_vector.h>
@@ -25,8 +26,7 @@ Nos bastidores, o Thrust manipulará a alocação de espaço no dispositivo que 
 int main(void)
 {
     // Declare AQUI um vetor de host H para armazenar 4 inteiros 
-
-
+#FIXME 
     // initialize individual elements
     H[0] = 14;
     H[1] = 20;
@@ -45,8 +45,8 @@ int main(void)
     
     std::cout << "H now has size " << H.size() << std::endl;
 
-    // Copy host_vector H to device_vector D
-    thrust::device_vector<int> D = H;
+    // Declare AQUI um vetor de device D e inicialíze-o com os valores em H
+#FIXME 
     
     // elements of D can be modified
     D[0] = 99;
@@ -60,21 +60,22 @@ int main(void)
     return 0;
 }
 ```
+Salve seu programa com extensão .cu e compile-o com o nvcc. Repare que elementos individuais de um device_vector podem ser acessados usando []. Entretanto, já que esses acessos requerem chamadas a cudaMemcpy, devem ser usados com cuidado. Iremos estudar formas mais eficientes posteriormente. 
 
+## Iteradores ##
+Agora que temos containers para nossos dados no Thrust, precisamos que nossos algoritmos acessem esses dados independentemente do tipo de dados que eles contêm. É aqui que entram os iteradores de C++. No caso de containers vetoriais, que são realmente apenas matrizes, os iteradores podem ser considerados como ponteiros para elementos de matriz. Portanto, H.begin() é um iterador que aponta para o primeiro elemento da matriz armazenada dentro do vetor H. Da mesma forma, H.end() aponta para o elemento após o último elemento do vetor H.
 
-Iteradores
+Embora os iteradores vetoriais sejam semelhantes aos ponteiros, eles carregam mais informações com eles. Não precisamos dizer aos algoritmos de Thrust que eles estão operando em um iterador device_vector ou host_vector. Essa informação é capturada no tipo do iterador retornado pelo H.begin(). Quando uma função Thrust é chamada, ela inspeciona o tipo do iterador para determinar se deve usar uma implementação de host ou de dispositivo. Esse processo é conhecido como **static dispatching**, pois o dispatch do host/dispositivo é resolvido no momento da compilação. Observe que isso implica que não há sobrecarga de tempo de execução no processo de escalonamento.
 
-Agora que temos containers para nossos dados no Thrust, precisamos que nossos algoritmos acessem esses dados, independentemente do tipo de dados que eles contêm. É aqui que os iteradores de C ++ entram para jogar. No caso de contêineres vetoriais, que são realmente apenas matrizes, os iteradores podem ser considerados como ponteiros para elementos de matriz. Portanto, H.begin () é um iterador que aponta para o primeiro elemento da matriz armazenada dentro do vetor H. Da mesma forma, H.end () aponta para o elemento um após o último elemento do vetor H.
+## Funções ##
+Com contêineres e iteradores, podemos finalmente processar nossos dados usando funções. Quase todas as funções Thrust processam os dados usando iteradores apontando para vetores diferentes. Por exemplo, para copiar dados de um vetor de dispositivo para um vetor de host, é usado o código a seguir:
 
-Embora os iteradores vetoriais sejam semelhantes aos ponteiros, eles carregam mais informações com eles. Não precisamos dizer aos algoritmos de Thrust que eles estão operando em um iterador device_vector ou host_vector. Essa informação é capturada no tipo do iterador retornado pelo H.begin (). Quando uma função Thrust é chamada, ela inspeciona o tipo do iterador para determinar se deve usar uma implementação de host ou de dispositivo. Esse processo é conhecido como despacho estático, pois o despacho do host / dispositivo é resolvido no momento da compilação. Observe que isso implica que não há sobrecarga de tempo de execução no processo de distribuição.
-Funções
-
-Com contêineres e iteradores, podemos finalmente processar nossos dados usando funções. Quase todas as funções Thrust processam os dados usando iteradores apontando para vetores diferentes. Por exemplo, para copiar dados de um vetor de dispositivo para um host de vetor, o código a seguir é usado:
-
+```cpp
 thrust :: copy (d_vec.begin (), d_vec.end (), h_vec.begin ());
-
+```
 Esta função simplesmente diz "Iniciando no primeiro elemento de d_vec, copie os dados iniciando no início de h_vec, avançando através de cada vetor até que o final de d_vec seja atingido."
-Tarefa Instruções
+### Exercício : Ordenação
+Neste exercício você irá escrever código usando Thrust para copiar dados gerados aleatoriamente para a GPU, ordená-los e copiá-los de volta para o host. 
 
 Seu objetivo nessa tarefa é substituir o #FIXME de task1.cu pelo código que faz o seguinte:
 
@@ -87,7 +88,7 @@ A solução para essa tarefa é fornecida em task1_solution.cu no editor abaixo.
 Depois de fazer uma alteração, salve o arquivo simplesmente clicando no botão Salvar abaixo. Como um lembrete, salvar o arquivo realmente o salva no sistema GPU da Amazon na nuvem em que você está rodando. Para obter uma cópia dos arquivos em que trabalharemos, consulte a seção Post-Lab no final desta página. Lembre-se também de ficar de olho no tempo. A instância em que você está executando será encerrada após 120 minutos do início do laboratório. Portanto, salve seu trabalho antes que o tempo acabe!
 
 
-### Exercício 1: Ordenação
+### Exercício : Ordenação
 Neste exercício você irá escrever código usando Thrust para copiar dados gerados aleatoriamente para a GPU, ordená-los e copiá-los de volta para o host. 
 
 ```cpp
