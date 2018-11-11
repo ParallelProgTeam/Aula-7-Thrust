@@ -1,22 +1,66 @@
 # Aula-7-Thrust
-Este material é baseado na documentação disponível em https://github.com/thrust/thrust (originalmente de Jared Hoberock and Nathan Bell), no GPU Teaching Kit – Accelerated Computing e no livro  "Programming Massively Parallel Processors A Hands-on Approach" (3ra edição) de David B. Kirk e Wen-mei W. Hwu (leitura sugerida!!) e no Lab "Using Thrust to Accelerate C++", created by Mark Ebersole. É recomendável também fazer o laboratório em https://courses.nvidia.com/courses/course-v1:DLI+L-AC-18+V1/.
+Este material é baseado na documentação disponível em https://github.com/thrust/thrust (originalmente de Jared Hoberock and Nathan Bell), https://docs.nvidia.com/cuda/thrust/index.html, no GPU Teaching Kit – Accelerated Computing e no livro  "Programming Massively Parallel Processors A Hands-on Approach" (3ra edição) de David B. Kirk e Wen-mei W. Hwu (leitura sugerida!!) e no Lab "Using Thrust to Accelerate C++", created by Mark Ebersole. É recomendável também fazer o laboratório em https://courses.nvidia.com/courses/course-v1:DLI+L-AC-18+V1/.
 
 **Thrust** é uma biblioteca de algoritmos paralelos que se assemelha muito ao STL (C++ Standard Template Library), permitindo ao programador criar rapidamente programas portáveis que fazem uso tanto de GPUs quanto de arquiteturas multicore CPUs.  A interoperabilidade com tecnologias estabelecidas (como CUDA, TBB e OpenMP) facilita a integração com o software existente.
 
 Para evitar conflitos de espaços de nome,  todas as funções e membros Thrust estarão precedidos por thrust:: para indicar de qual  namespace vêm. Também estaremos usando funções do namespace std:: 
 
-###Containers###
+### Containers ###
 Enquanto o STL tem muitos tipos diferentes de conteiners, o Thrust trabalha apenas com dois tipos de vetores:
+- Vetores armazenados no host são declarados com thrust :: host_vector <type>
+- Vetores de dispositivo são declarados com thrust :: device_vector <type>
 
-    * Vetores de host são declarados com thrust :: host_vector <type>
-    * Vetores de dispositivo são declarados com thrust :: device_vector <type>
+Ao declarar um vetor de host ou dispositivo, você deve fornecer o tipo de dados que ele conterá. Na verdade, como o Thrust é um modelo, a maioria das suas declarações envolverá a especificação de um tipo. Esses tipos podem ser tipos de dados nativos simples comuns, como int, char ou float. Mas o tipo também pode ser estruturas complexas como um thrust::tuple, que contém vários elementos. Para obter detalhes sobre como inicializar um vetor de host ou dispositivo, você pode consultar a documentação do Thrust em https://github.com/thrust/thrust/wiki/Documentation. Para este laboratório, os dois métodos necessários para inicializar um vetor Thrust são os seguintes:
 
-Ao declarar um vetor de host ou dispositivo, você deve fornecer o tipo de dados que ele conterá. Na verdade, como o Thrust é um modelo, a maioria das suas declarações envolverá a especificação de um tipo. Esses tipos podem ser tipos de dados nativos simples comuns, como int, char ou float. Mas o tipo também pode ser estruturas complexas como um thrust :: tuple que contém vários elementos. Para obter detalhes sobre como inicializar um vetor de host ou dispositivo, sugiro que você consulte a documentação do Thrust aqui. Para este laboratório, os dois métodos necessários para inicializar um vetor Thrust são os seguintes:
+- Criar um vetor de host ou dispositivo de um tamanho específico: thrust::host_vector <type> h_vec (SIZE); ou thrust :: device_vector <type> d_vec (SIZE); 
+- Para criar e inicializar um vetor de dispositivo a partir de um vetor Thrust existente: thrust::device_vector <type> d_vec = h_vec;
+   
+Nos bastidores, o Thrust manipulará a alocação de espaço no dispositivo que tem o mesmo tamanho de h_vec, além de copiar a memória do host para o dispositivo.
+```cpp
+#include <thrust/host_vector.h>
+#include <thrust/device_vector.h>
 
-    Crie um vetor de host ou dispositivo de um tamanho específico: thrust :: host_vector <type> h_vec (SIZE); ou thrust :: device_vector <type> d_vec (SIZE);
-        É uma prática comum proceder a variáveis ​​vetoriais hospedeiras com variáveis ​​vetoriais h_ e dispositivo com d_ para deixar claro no código qual espaço de memória eles estão se referindo.
-    Crie e inicialize um vetor de dispositivo a partir de um vetor Thrust existente: thrust :: device_vector <type> d_vec = h_vec;
-        Nos bastidores, o Thrust manipulará a alocação de espaço no dispositivo que tem o mesmo tamanho de h_vec, além de copiar a memória do host para o dispositivo.
+#include <iostream>
+
+int main(void)
+{
+    // Declare AQUI um vetor de host H para armazenar 4 inteiros 
+
+
+    // initialize individual elements
+    H[0] = 14;
+    H[1] = 20;
+    H[2] = 38;
+    H[3] = 46;
+    
+    // H.size() returns the size of vector H
+    std::cout << "H has size " << H.size() << std::endl;
+
+    // print contents of H
+    for(int i = 0; i < H.size(); i++)
+        std::cout << "H[" << i << "] = " << H[i] << std::endl;
+
+    // resize H
+    H.resize(2);
+    
+    std::cout << "H now has size " << H.size() << std::endl;
+
+    // Copy host_vector H to device_vector D
+    thrust::device_vector<int> D = H;
+    
+    // elements of D can be modified
+    D[0] = 99;
+    D[1] = 88;
+    
+    // print contents of D
+    for(int i = 0; i < D.size(); i++)
+        std::cout << "D[" << i << "] = " << D[i] << std::endl;
+
+    // H and D are automatically deleted when the function returns
+    return 0;
+}
+```
+
 
 Iteradores
 
