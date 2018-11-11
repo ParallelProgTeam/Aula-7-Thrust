@@ -3,52 +3,49 @@ Este material é baseado na documentação disponível em https://github.com/thr
 
 **Thrust** é uma biblioteca de algoritmos paralelos que se assemelha muito ao STL (C++ Standard Template Library), permitindo ao programador criar rapidamente programas portáveis que fazem uso tanto de GPUs quanto de arquiteturas multicore CPUs.  A interoperabilidade com tecnologias estabelecidas (como CUDA, TBB e OpenMP) facilita a integração com o software existente.
 
-Por exemplo, o seguinte código 
+Para evitar conflitos de espaços de nome,  todas as funções e membros Thrust estarão precedidos por thrust:: para indicar de qual  namespace vêm. Também estaremos usando funções do namespace std:: 
 
- The code in Task #1 will move some randomly generated data to the GPU, sort it, and then copy it back to the host. Before we jump into the code, let's go over the basics of working with Thrust.
+###Containers###
+Enquanto o STL tem muitos tipos diferentes de conteiners, o Thrust trabalha apenas com dois tipos de vetores:
 
-First off, to help avoid naming conflicts, C++ makes use of namepsaces and Thrust is no exception. In this lab and in most of the Thrust code you will see, all the Thrust functions and members will be preceded by thrust:: to indicate which namespace it comes from. In this this lab, you will also see reference to the std:: namespace for printing out values to the screen.
-Containers
+    * Vetores de host são declarados com thrust :: host_vector <type>
+    * Vetores de dispositivo são declarados com thrust :: device_vector <type>
 
-Whereas the STL has many different types of containers, Thrust just works with two vector types:
+Ao declarar um vetor de host ou dispositivo, você deve fornecer o tipo de dados que ele conterá. Na verdade, como o Thrust é um modelo, a maioria das suas declarações envolverá a especificação de um tipo. Esses tipos podem ser tipos de dados nativos simples comuns, como int, char ou float. Mas o tipo também pode ser estruturas complexas como um thrust :: tuple que contém vários elementos. Para obter detalhes sobre como inicializar um vetor de host ou dispositivo, sugiro que você consulte a documentação do Thrust aqui. Para este laboratório, os dois métodos necessários para inicializar um vetor Thrust são os seguintes:
 
-    Host vectors are declared with thrust::host_vector<type>
-    Device vectors are declared with thrust::device_vector<type>
+    Crie um vetor de host ou dispositivo de um tamanho específico: thrust :: host_vector <type> h_vec (SIZE); ou thrust :: device_vector <type> d_vec (SIZE);
+        É uma prática comum proceder a variáveis ​​vetoriais hospedeiras com variáveis ​​vetoriais h_ e dispositivo com d_ para deixar claro no código qual espaço de memória eles estão se referindo.
+    Crie e inicialize um vetor de dispositivo a partir de um vetor Thrust existente: thrust :: device_vector <type> d_vec = h_vec;
+        Nos bastidores, o Thrust manipulará a alocação de espaço no dispositivo que tem o mesmo tamanho de h_vec, além de copiar a memória do host para o dispositivo.
 
-When declaring a host or device vector, you must provide the data type it will contain. In fact, since Thrust is a template library, most of your declarations will involve specifying a type. These types can be common simple native data-types like int, char, or float. But the type can also be complex structures like a thrust::tuple which contains multiple elements. For details on how to initialize a host or device vector, I encourage you to look at the Thrust documentation here. For this lab, the two methods needed to initialize a Thrust vector are the following:
+Iteradores
 
-    Create a host or device vector of a specific size: thrust::host_vector<type> h_vec( SIZE ); or thrust::device_vector<type> d_vec( SIZE );
-        It's common practice to proceed host vector variables with h_ and device vector variables with d_ to make it clear in the code which memory space they are referring to.
-    Create and initialize a device vector from an existing Thrust vector: thrust::device_vector<type> d_vec = h_vec;
-        Under the covers, Thrust will handle allocating space on the device that is the same size as h_vec, as well as copying the memory from the host to the device.
+Agora que temos containers para nossos dados no Thrust, precisamos que nossos algoritmos acessem esses dados, independentemente do tipo de dados que eles contêm. É aqui que os iteradores de C ++ entram para jogar. No caso de contêineres vetoriais, que são realmente apenas matrizes, os iteradores podem ser considerados como ponteiros para elementos de matriz. Portanto, H.begin () é um iterador que aponta para o primeiro elemento da matriz armazenada dentro do vetor H. Da mesma forma, H.end () aponta para o elemento um após o último elemento do vetor H.
 
-Interators
+Embora os iteradores vetoriais sejam semelhantes aos ponteiros, eles carregam mais informações com eles. Não precisamos dizer aos algoritmos de Thrust que eles estão operando em um iterador device_vector ou host_vector. Essa informação é capturada no tipo do iterador retornado pelo H.begin (). Quando uma função Thrust é chamada, ela inspeciona o tipo do iterador para determinar se deve usar uma implementação de host ou de dispositivo. Esse processo é conhecido como despacho estático, pois o despacho do host / dispositivo é resolvido no momento da compilação. Observe que isso implica que não há sobrecarga de tempo de execução no processo de distribuição.
+Funções
 
-Now that we have containers for our data in Thrust, we need a way for our algorithms to access this data, regardless of what type of data they contain. This is where C++ iterators come in to play. In the case of vector containers, which are really just arrays, iterators can be thought of as pointers to array elements. Therefore, H.begin() is an iterator that points to the first element of the array stored inside the H vector. Similarly, H.end() points to the element one past the last element of the H vector.
+Com contêineres e iteradores, podemos finalmente processar nossos dados usando funções. Quase todas as funções Thrust processam os dados usando iteradores apontando para vetores diferentes. Por exemplo, para copiar dados de um vetor de dispositivo para um host de vetor, o código a seguir é usado:
 
-Although vector iterators are similar to pointers, they carry more information with them. We do not have to tell Thrust algorithms that they are operating on a device_vector or host_vector iterator. This information is captured in the type of the iterator returned by H.begin(). When a Thrust function is called, it inspects the type of the iterator to determine whether to use a host or a device implementation. This process is known as static dispatching since the host/device dispatch is resolved at compile time. Note that this implies that there is no runtime overhead to the dispatch process.
-Functions
+thrust :: copy (d_vec.begin (), d_vec.end (), h_vec.begin ());
 
-With containers and iterators, we can finally process our data using functions. Almost all Thrust functions process the data by using iterators pointing at different vectors. For example, to copy data from a device vector to a host vector, the following code is used:
+Esta função simplesmente diz "Iniciando no primeiro elemento de d_vec, copie os dados iniciando no início de h_vec, avançando através de cada vetor até que o final de d_vec seja atingido."
+Tarefa Instruções
 
-thrust::copy( d_vec.begin(), d_vec.end(), h_vec.begin() );
+Seu objetivo nessa tarefa é substituir o #FIXME de task1.cu pelo código que faz o seguinte:
 
-This function simply states "Starting at the first element of d_vec, copy the data starting at the beginning of h_vec, advancing through each vector until the end of d_vec is reached."
-Task Instructions
+    Crie um device_vector e copie os dados h_vec inicializados para ele usando o operador = como discutido acima
+    Classifique os dados no dispositivo com thrust :: sort
+    Mova os dados de volta para h_vec usando thrust :: copy
 
-Your objective in this task is to replace the #FIXME of task1.cu with code that does the following:
+A solução para essa tarefa é fornecida em task1_solution.cu no editor abaixo. Por favor, olhe para ele para verificar o seu trabalho, ou se você ficar preso. Você pode encontrar esse arquivo clicando na pasta "task1" à esquerda do editor de texto e selecionando task1_solution.cu.
 
-    Create a device_vector and copy the initialized h_vec data to it using the = operator as discussed above
-    Sort the data on the device with thrust::sort
-    Move the data back to h_vec using thrust::copy
-
-The solution to this task is provided in task1_solution.cu in the editor below. Please look at it to check your work, or if you get stuck. You can find this file by clicking on the "task1" folder on the left of the text editor, then selecting task1_solution.cu.
-
-After making a change, make sure to save the file by simply clicking the save button below. As a reminder, saving the file actually saves it on the Amazon GPU system in the cloud you're running on. To get a copy of the files we'll be working on, consult the Post-Lab section near the end of this page. Also remember to keep an eye on the time. The instance you are running on will shut down after 120 minutes from when you started the lab, so make sure to save your work before times run out!
+Depois de fazer uma alteração, salve o arquivo simplesmente clicando no botão Salvar abaixo. Como um lembrete, salvar o arquivo realmente o salva no sistema GPU da Amazon na nuvem em que você está rodando. Para obter uma cópia dos arquivos em que trabalharemos, consulte a seção Post-Lab no final desta página. Lembre-se também de ficar de olho no tempo. A instância em que você está executando será encerrada após 120 minutos do início do laboratório. Portanto, salve seu trabalho antes que o tempo acabe!
 
 
+### Exercício 1: Ordenação
+Neste exercício você irá escrever código usando Thrust para copiar dados gerados aleatoriamente para a GPU, ordená-los e copiá-los de volta para o host. 
 
-Thrust is best explained through examples. The following source code generates random numbers serially and then transfers them to a parallel device where they are sorted.
 ```cpp
 #include <thrust/host_vector.h>
 #include <thrust/device_vector.h>
