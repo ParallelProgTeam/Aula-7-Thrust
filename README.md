@@ -70,7 +70,7 @@ Embora os iteradores vetoriais sejam semelhantes aos ponteiros, eles carregam ma
 Com conteiners e iteradores, podemos finalmente processar nossos dados usando funções. Quase todas as funções Thrust processam os dados usando iteradores apontando para vetores diferentes. Por exemplo, para copiar dados de um vetor de dispositivo para um vetor de host, é usado o código a seguir:
 
 ```cpp
-thrust :: copy (d_vec.begin (), d_vec.end (), h_vec.begin ());
+thrust::copy (d_vec.begin (), d_vec.end (), h_vec.begin ());
 ```
 Esta função simplesmente diz "Iniciando no primeiro elemento de d_vec, copie os dados iniciando no início de h_vec, avançando através de cada vetor até que o final de d_vec seja atingido."
 
@@ -147,12 +147,13 @@ thrust :: transform (..., thrust :: modulus <float> ());
 ´´´
 Você notará que temos que adicionar o () após <float> enquanto estamos chamando o construtor functors para instanciar o objeto da função. A função de transformação Thrust agora pode aplicar o functor a todos os elementos com os quais está trabalhando.
 
+### Tarefa nº 3
 Nesse exercício, você deve substituir as seções de código #FIXME para resolver os seguintes problemas:
-*   Inicialize o vetor X com 0,1,2,3, ..., 9 usando thrust :: sequence
-*    Preencha o vetor Z com todos os 2 usando thrust :: fill
-*    Defina Y igual a X mod Z usando thrust :: transform e thrust :: modulus
-*    Substitua todos os 1's em Y por 10's com impulso :: substituir
-*    Imprima o resultado de Y com thrust :: copy e copie-o para o iterador de saída std :: ostream_iterator <int> (std :: cout, "\ n")
+*   Inicialize o vetor X com 0,1,2,3, ..., 9 usando thrust::sequence
+*    Preencha o vetor Z com todos os 2 usando thrust::fill
+*    Defina Y igual a X mod Z usando thrust::transform e thrust :: modulus
+*    Substitua todos os 1's em Y por 10's com thrust::replace
+*    Imprima o resultado de Y com thrust::copy e copie-o para o iterador de saída std::ostream_iterator<int>(std::cout, "\n")
 
 Para certificar-se de que você está recebendo a resposta correta, o programa imprime o vetor do dispositivo Y. Se tudo foi feito corretamente, você deverá ver a seguinte saída:
 
@@ -167,10 +168,7 @@ Para certificar-se de que você está recebendo a resposta correta, o programa i
 0
 10
 
-
-
-
-Thrust fornece alguns functores internos para você usar, mas o poder real vem da criação de seus próprios functores. Para essa tarefa, removeremos a chamada para thrust :: replace do código na Tarefa nº 2 e, em vez disso, substituiremos essa funcionalidade por um functor personalizado usado na chamada thrust :: transform. Um exemplo de um functor customizado é o seguinte functor unário que retorna o quadrado do valor de entrada:
+Thrust fornece alguns functores internos para você usar, mas o poder real vem da criação de seus próprios functores. Para essa tarefa, removeremos a chamada para thrust::replace do código na Tarefa nº 3 e, em vez disso, substituiremos essa funcionalidade por um functor personalizado usado na chamada thrust::transform. Um exemplo de um functor customizado é o seguinte functor unário que retorna o quadrado do valor de entrada:
 
 template <typename T>
 quadrado da estrutura
@@ -209,6 +207,85 @@ Se você está criando o objeto functor quadrado diretamente na lista de argumen
 
 Dica # 3
 Não se esqueça de adicionar, no mínimo, a palavra-chave __device__ antes da sua função, para que o compilador saiba compilar esta função para a GPU.
+
+#include <thrust/host_vector.h>
+#include <thrust/device_vector.h>
+#include <thrust/reduce.h>
+#include <cstdlib>
+
+int main(void)
+{
+  // generate some random data on the host
+	thrust::host_vector<int> h_vec(10);
+	for (unsigned int i=0;i<h_vec.size();i++) h_vec[i]=rand()%10;
+
+  // transfer to device
+	thrust::device_vector<int> d_vec = h_vec;
+
+  // sum on device
+	int final_sum = thrust::reduce(d_vec.begin(), d_vec.end(), 
+		0, thrust::plus<int>());
+	int final_max = thrust::reduce(d_vec.begin(), d_vec.end(), 
+		0, thrust::maximum<int>());
+	int final_min = thrust::reduce(d_vec.begin(), d_vec.end(), 
+		999, thrust::minimum<int>());
+
+	std::cout<<"Final sum="<<final_sum<<"  max="<<final_max<<"  min="<<final_min<<"\n";
+
+	return 0;
+}
+
+(Try this in NetRun now!)
+
+It's not very efficient (see below) to call thrust::reduce three times on the same vector.  It's more efficient to call it once, and collect up the sum, min, and max all in one go.  To do this, we need to write a weird 'functor' to pass to thrust::reduce.
+''çpp
+#include <thrust/host_vector.h>
+#include <thrust/device_vector.h>
+#include <thrust/reduce.h>
+#include <cstdlib>
+
+// This is used to store everything we know about the ints seen so far:
+class sum_min_max {
+public:
+	int sum, min, max;
+	sum_min_max() {sum=0; min=1000000000; max=-1000000000;}
+	__device__ __host__ sum_min_max(int value) {sum=value; min=value; max=value;}
+};
+
+// This 'functor' function object combines two sum_min_max objects
+class smm_combiner {
+public:
+__device__ __host__ 
+sum_min_max operator()(sum_min_max l,const sum_min_max &r) {
+	l.sum+=r.sum;
+	if (l.min>r.min) l.min=r.min;
+	if (l.max<r.max) l.max=r.max;
+	return l;
+}
+};
+
+int main(void)
+{
+  // generate some random data on the host
+	thrust::host_vector<int> h_vec(10);
+	for (unsigned int i=0;i<h_vec.size();i++) h_vec[i]=rand()%10;
+
+  // transfer to device
+	thrust::device_vector<int> d_vec = h_vec;
+
+  // sum/min/max on device
+	sum_min_max final = thrust::reduce(d_vec.begin(), d_vec.end(), 
+		sum_min_max(), smm_combiner());
+
+	std::cout<<"Final sum="<<final.sum<<"  max="<<final.max<<"  min="<<final.min<<"\n";
+
+	return 0;
+}
+
+(Try this in NetRun now!)
+
+This same idea could probably be better written as a thrust::tuple.
+'''
 
 Em [10]:
 
