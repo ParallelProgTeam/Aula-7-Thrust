@@ -73,66 +73,9 @@ Com contêineres e iteradores, podemos finalmente processar nossos dados usando 
 thrust :: copy (d_vec.begin (), d_vec.end (), h_vec.begin ());
 ```
 Esta função simplesmente diz "Iniciando no primeiro elemento de d_vec, copie os dados iniciando no início de h_vec, avançando através de cada vetor até que o final de d_vec seja atingido."
-### Exercício : Ordenação
-Neste exercício você irá escrever código usando Thrust para copiar dados gerados aleatoriamente para a GPU, ordená-los e copiá-los de volta para o host. 
 
-Seu objetivo nessa tarefa é substituir o #FIXME de task1.cu pelo código que faz o seguinte:
-
-    Crie um device_vector e copie os dados h_vec inicializados para ele usando o operador = como discutido acima
-    Classifique os dados no dispositivo com thrust :: sort
-    Mova os dados de volta para h_vec usando thrust :: copy
-
-A solução para essa tarefa é fornecida em task1_solution.cu no editor abaixo. Por favor, olhe para ele para verificar o seu trabalho, ou se você ficar preso. Você pode encontrar esse arquivo clicando na pasta "task1" à esquerda do editor de texto e selecionando task1_solution.cu.
-
-Depois de fazer uma alteração, salve o arquivo simplesmente clicando no botão Salvar abaixo. Como um lembrete, salvar o arquivo realmente o salva no sistema GPU da Amazon na nuvem em que você está rodando. Para obter uma cópia dos arquivos em que trabalharemos, consulte a seção Post-Lab no final desta página. Lembre-se também de ficar de olho no tempo. A instância em que você está executando será encerrada após 120 minutos do início do laboratório. Portanto, salve seu trabalho antes que o tempo acabe!
-
-
-### Exercício : Ordenação
-Neste exercício você irá escrever código usando Thrust para copiar dados gerados aleatoriamente para a GPU, ordená-los e copiá-los de volta para o host. 
-
+O seguinte código computa a soma de 100 números randômicos em paralelo:
 ```cpp
-#include <thrust/host_vector.h>
-#include <thrust/device_vector.h>
-#include <thrust/generate.h>
-#include <thrust/sort.h>
-#include <thrust/copy.h>
-#include <algorithm>
-#include <cstdlib>
-
-int main(void)
-{
-  // generate 32M random numbers serially
-  thrust::host_vector<int> h_vec(32 << 20);
-  std::generate(h_vec.begin(), h_vec.end(), rand);
-
-  // transfer data to the device
-  thrust::device_vector<int> d_vec = h_vec;
-
-  // sort data on the device (846M keys per second on GeForce GTX 480)
-  thrust::sort(d_vec.begin(), d_vec.end());
-
-  // transfer data back to host
-  thrust::copy(d_vec.begin(), d_vec.end(), h_vec.begin());
-
-  return 0;
-}
-```
-
-Congrats! You have successfully executed code on the GPU using Thrust, and you did not have to write any GPU specific code! As we'll see in Task #4, with just a compiler switch, you can compile Thrust code to execute on a CPU.
-
-
-
-
-
-
-
-
-
-
-
-
-This code sample computes the sum of 100 random numbers in parallel:
-
 #include <thrust/host_vector.h>
 #include <thrust/device_vector.h>
 #include <thrust/generate.h>
@@ -152,6 +95,42 @@ int main(void)
   int x = thrust::reduce(d_vec.begin(), d_vec.end(), 0, thrust::plus<int>());
   return 0;
 }
+```
+### Exercício 2: Ordenação
+Neste exercício você irá escrever código usando Thrust para copiar dados gerados aleatoriamente para a GPU, ordená-los e copiá-los de volta para o host. Seu objetivo nessa tarefa é substituir o #FIXME do programa a seguir pelo código que faz o seguinte:
+1. Crie um device_vector e copie os dados inicializados em h_vec para um device_vetor d_vec usando o operador *=* como discutido acima
+2. Ordene os dados no dispositivo com thrust::sort
+3. Mova os dados de volta para h_vec usando thrust::copy
+
+```cpp
+#include <thrust/host_vector.h>
+#include <thrust/device_vector.h>
+#include <thrust/generate.h>
+#include <thrust/sort.h>
+#include <thrust/copy.h>
+#include <algorithm>
+#include <cstdlib>
+
+int main(void)
+{
+  // generate 50000000 random numbers serially
+  #FIXME
+  
+  std::generate(h_vec.begin(), h_vec.end(), rand);
+
+  // transfer data to the device
+  #FIXME
+  // sort data on the device (846M keys per second on GeForce GTX 480)
+  #FIXME
+
+  // transfer data back to host
+  #FIXME
+  return 0;
+}
+```
+
+Conseguiu? Parabéns! Você executou código na GPU usando Thrust, sem precisar escrever código específico para a GPU. Daqui a pouco veremos como é possível, mudando só um switch do compilador switch, compilar Thrust para executar na CPU.
+
 
 ## Trabalho para casa ##
 Você encontrará no diretório  /usr/local/cuda/cuda9-installed-samples/NVIDIA_CUDA-9.0_Samples/6_Advanced/radixSortThrust uma implementação de Radix Sort em paralelo usando Thrust. Comente o arquivo .cu e apresente-o na próxima aula. O trabalho pode ser feito em duplas. 
