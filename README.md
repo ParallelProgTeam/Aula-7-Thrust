@@ -59,7 +59,7 @@ int main(void)
     return 0;
 }
 ```
-Salve seu programa com extensão .cu e compile-o com o nvcc. Repare que elementos individuais de um *device_vector* podem ser acessados usando **[]**. Entretanto, já que esses acessos requerem chamadas a cudaMemcpy, devem ser usados com cuidado. Iremos estudar formas mais eficientes posteriormente. 
+Salve seu programa com extensão .cu e compile-o com o nvcc. Repare que elementos individuais de um *device_vector* podem ser acessados usando **[ ]**. Entretanto, já que esses acessos requerem chamadas a cudaMemcpy, devem ser usados com cuidado. Iremos estudar formas mais eficientes posteriormente. 
 
 ## Iteradores ##
 Agora que temos containers para nossos dados no Thrust, precisamos que nossos algoritmos acessem esses dados independentemente do tipo de dados que eles contêm. É aqui que entram os iteradores de C++. No caso de containers vetoriais, que são realmente apenas matrizes, os iteradores podem ser considerados como ponteiros para elementos de matriz. Portanto, H.begin() é um iterador que aponta para o primeiro elemento da matriz armazenada dentro do vetor H. Da mesma forma, H.end() aponta para o elemento após o último elemento do vetor H.
@@ -131,6 +131,234 @@ int main(void)
 
 Conseguiu? Parabéns! Você executou código na GPU usando Thrust, sem precisar escrever código específico para a GPU. Daqui a pouco veremos como é possível, mudando só um switch do compilador switch, compilar Thrust para executar na CPU.
 
+A maioria das funções Thrust são planejadas para serem blocos de construção, permitindo que o programador construa algoritmos complexos sobre elas. O objetivo desta tarefa é oferecer a você mais experiência usando funções e iteradores Thrust e expor você a funções adicionais disponíveis.
+
+Além disso, você começará a trabalhar com "functores" nessa tarefa. Um functor é um "objeto de função", que é um objeto que pode ser chamado como se fosse uma função comum. Em C ++, um functor é apenas uma classe ou estrutura que define o operador de chamada de função. Por serem objetos, functores podem ser passados ​​(junto com seu estado) para outras funções como parâmetro. O empuxo vem com um punhado de functores predefinidos, um dos quais vamos usar nesta tarefa. Na próxima tarefa, veremos como escrever seu próprio functor e usá-lo em um algoritmo Thrust.
+
+Existem algumas maneiras de usar um functor. Um deles é criá-lo como se fosse um objeto normal como este:
+
+thrust :: modulus <float> modulusFunctor (...); // Crie o functor, se necessário, passe qualquer argumento para o construtor.
+float result = modulusFunctor (4.0, 2.0); // Use o functor como uma função regular
+...
+
+O segundo método é chamar o construtor diretamente em uma lista de argumentos para outra função:
+
+thrust :: transform (..., thrust :: modulus <float> ());
+
+Você notará que temos que adicionar o () após <float> enquanto estamos chamando o construtor functors para instanciar o objeto da função. A função de transformação Thrust agora pode aplicar o functor a todos os elementos com os quais está trabalhando.
+
+Usando o editor abaixo, abra task2.cu como antes (clique na pasta task2, depois em task2.cu). Seu objetivo é substituir as seções de código #FIXME para conseguir o seguinte. Observe que cada item é vinculado à documentação relevante do Thrust.
+
+    Inicialize o vetor X com 0,1,2,3, ..., 9 usando thrust :: sequence
+    Preencha o vetor Z com todos os 2 usando thrust :: fill
+    Defina Y igual a X mod Z usando thrust :: transform e thrust :: modulus
+    Substitua todos os 1's em Y por 10's com impulso :: substituir
+    Imprima o resultado de Y com thrust :: copy e copie-o para o iterador de saída std :: ostream_iterator <int> (std :: cout, "\ n")
+
+Para certificar-se de que você está recebendo a resposta correta, o programa imprime o vetor do dispositivo Y. Se tudo foi feito corretamente, você deverá ver a seguinte saída:
+
+0
+10
+0
+10
+0
+10
+0
+10
+0
+10
+
+Tarefa 3
+
+Thrust fornece alguns functores internos para você usar, mas o poder real vem da criação de seus próprios functores. Para essa tarefa, removeremos a chamada para thrust :: replace do código na Tarefa nº 2 e, em vez disso, substituiremos essa funcionalidade por um functor personalizado usado na chamada thrust :: transform. Um exemplo de um functor customizado é o seguinte functor unário que retorna o quadrado do valor de entrada:
+
+template <typename T>
+quadrado da estrutura
+{
+  __host__ __device__
+  Operador T () (const T & x) const
+  {
+    return x * x;
+  }
+};
+
+A linha __host__ __device__ acima diz ao compilador nvcc para compilar uma versão do Host e do Dispositivo da função abaixo dela. Isso mantém a portabilidade entre CPUs e GPUs.
+
+A maneira como esse functor funciona é que estamos sobrescrevendo o operador () da estrutura. Este é o mais versátil dos operadores sobrecarregáveis, pois pode aceitar qualquer número e tipo de entradas e retornar qualquer tipo de saída. Dessa forma, os algoritmos Thrust precisam simplesmente chamar outputType = someFunctor (inputType1, inputType2, ..., inputTypeN) sem precisar entender o que a função faz. Isso contribui para uma biblioteca muito poderosa e flexível!
+
+Nota: Não é necessário tornar seu functor personalizado um modelo struct, mas adiciona muita flexibilidade ao seu código.
+
+Em task3.cu abaixo, conclua a criação do functor modZeroOrTen e, em seguida, chame-o a partir da função thrust :: transform. Se tudo for feito corretamente, você deve obter a mesma saída da Tarefa 2, que é:
+
+0
+10
+0
+10
+0
+10
+0
+10
+0
+10
+
+Dica # 1
+O functor personalizado para o nosso código precisa ser um operador binário - são necessários dois valores como entrada. O exemplo de functor quadrado mostrado é apenas um operador unário.
+
+Dica # 2
+Se você está criando o objeto functor quadrado diretamente na lista de argumentos thrust :: transform, não esqueça de adicionar o () para chamar o construtor.
+
+Dica # 3
+Não se esqueça de adicionar, no mínimo, a palavra-chave __device__ antes da sua função, para que o compilador saiba compilar esta função para a GPU.
+
+Em [10]:
+
+# Execute esta célula para compilar o task3.cu e, se for bem-sucedido, execute o programa
+
+! nvcc -O2 -arch = sm_30 task3 / task3.cu -run
+
+0
+10
+0
+10
+0
+10
+0
+10
+0
+10
+
+Criando esse functor personalizado, conseguimos eliminar a chamada thrust :: replace, o que contribui para uma aplicação mais eficiente.
+Tarefa 4
+
+Até agora, lidamos apenas com iteradores básicos que permitem ao Thrust percorrer todos os elementos de um vetor. Os iteradores extravagantes executam uma variedade de propósitos valiosos. Nesta tarefa, mostraremos como os iteradores sofisticados nos permitem atacar uma classe mais ampla de problemas com os algoritmos Thrust padrão. Apesar de não cobrirmos todos os iteradores de fantasia nesta tarefa, cobriremos três deles.
+
+O mais simples do grupo, constant_iterator é simplesmente um iterador que retorna o mesmo valor sempre que o desreferimos. No exemplo a seguir, inicializamos um constant_iterator com o valor 10.
+
+// criar iteradores
+impulso :: constant_iterator primeiro (10);
+thrust :: constant_iterator last = primeiro + 3; // Defina o último elemento como 3 depois do começo
+
+// soma de [primeiro, último)
+thrust :: reduce (primeiro, último); // retorna 30 (isto é, 10 + 10 + 10)
+
+O transform_iterator nos permite aplicar a técnica de combinar algoritmos separados, sem precisar depender do Thrust para fornecer uma versão especial do algoritmo transform_xxx. Essa tarefa mostra outra maneira de fundir uma transformação com uma redução, desta vez com apenas redução simples aplicada a um transform_iterator.
+
+O exemplo a seguir imprime todos os elementos no vetor de valores, depois de fixá-los entre 0 e 100.
+
+thrust :: copy (thrust :: make_transform_iterator (values.begin (), clamp (0, 100)), // primeiro elemento
+             thrust :: make_transform_iterator (values.end (), clamp (0, 100)), // elemento final
+             std :: ostream_iterator (std :: cout, ""));
+
+Finalmente, o zip_iterator é um gadget extremamente útil: ele toma múltiplas seqüências de entrada e produz uma sequência de tuplas. O exemplo a seguir aplica o arbitrary_functor a cada tupla, onde cada tupla é composta de elementos dos vetores A, B, C e D. Você pode ver detalhes sobre a função thrust :: for_each aqui.
+
+thrust :: for_each (thrust :: make_zip_iterator (thrust :: make_tuple (A. begin (), B. begin (), C. begin (), D. begin ())),
+                 thrust :: make_zip_iterator (thrust :: make_tuple (A.end (), B.end (), C.end (), D.end ())),
+                 arbitrary_functor ());
+
+Uma desvantagem de transform_iterator e zip_iterator é que pode ser complicado especificar o tipo completo do iterador, o que pode ser bastante demorado. Por esse motivo, é uma prática comum simplesmente colocar a chamada em make_transform_iterator ou make_zip_iterator nos argumentos do algoritmo que está sendo invocado.
+
+Seu objetivo nesta tarefa é modificar task4.cu e escrever o código para implementar cada tipo de iterador. Os diferentes tipos de iteradores são divididos em três funções - não há necessidade de modificar a função main (). Se quiser, você pode comentar o interior das funções que você ainda precisa implementar enquanto se concentra em uma. 
+
+
+
+
+## Exercício: Histogramas
+The purpose of this lab is to implement a histogramming algorithm for an input array of integers. This approach composes several distinct algorithmic steps to compute a histogram, which makes Thrust a valuable tools for its implementation.
+problem setup
+Consider the dataset
+input = [2 1 0 0 2 2 1 1 1 1 4]
+A resulting histogram would be
+histogram = [2 5 3 0 1]
+reflecting 2 zeros, 5 ones, 3 twos, 0 threes, and one 4 in the input dataset. Note that the number of bins is equal to
+max(input) + 1
+
+histogram sort approach
+First, sort the input data using thrust::sort. Continuing with the original example:
+sorted = [0 0 1 1 1 1 1 2 2 2 4]
+Determine the number of bins by inspecting the last element of the list and adding 1:
+num_bins = sorted.back() + 1
+
+To compute the histogram, we can compute the culumative histogram and then work backwards. To do this in Thrust, use thrust::upper_bound. upper_bound takes an input data range (the sorted input) and a set of search values, and for each search value will report the largest index in the input range that the search value could be inserted into without changing the sorted order of the inputs. For example,
+[2 8 11 11 12] = thrust::upper_bound([0 0 1 1 1 1 1 2 2 2 4], // input [0 1 2 3 4]) // search
+By carefully crafting the search data, thrust::upper_bound will produce a cumulative histogram. The search data must be a range [0,num_bins).
+Once the cumulative histogram is produced, use thrust::adjacent_different to compute the histogram.
+[2 5 3 0 1] = thrust::adjacent_difference([2 8 11 11 12])
+Check the thrust documentation for details of how to use upper_bound and adjacent_difference. Instead of constructing the search array in device memory, you may be able to use thrust::counting_iterator.
+
+instructions
+Edit the code in the code tab to perform the following:
+• allocate space for input on the GPU • copy host memory to device
+• invoke thrust functions
+• copy results from device to host
+Instructions about where to place each part of the code is demarcated by the //@@ comment lines.
+
+## Instruções
+The executable generated as a result of compiling the lab can be run using the following command:
+./ThrustHistogramSort_Template -e <expected.raw> \ -i <input.raw> -o <output.raw> -t integral_vector
+2
+where <expected.raw> is the expected output, <input.raw> is the input dataset, and <output.raw> is an optional path to store the results. The datasets can be generated using the dataset generator built as part of the compilation process.
+attribution
+This is a simplified version of the material presented in the Thrust repository aqui: https://github.com/thrust/thrust/blob/master/examples/histogram.cu
+
+code template
+The following code is suggested as a starting point for students. The code handles the import and export as well as the checking of the solution. Stu- dents are expected to insert their code is the sections demarcated with //@@. Students expected the other code unchanged. 
+
+```cpp
+#include <thrust/adjacent_difference.h>
+#include <thrust/binary_search.h>
+#include <thrust/copy.h>
+#include <thrust/device_vector.h>
+#include <thrust/iterator/counting_iterator.h>
+#include <thrust/sort.h>
+
+int main(int argc, char *argv[]) {
+  wbArg_t args;
+  int inputLength, num_bins;
+  unsigned int *hostInput, *hostBins;
+
+  args = wbArg_read(argc, argv);
+
+  wbTime_start(Generic, "Importing data and creating memory on host");
+  hostInput = (unsigned int *)wbImport(wbArg_getInputFile(args, 0),
+                                       &inputLength, "Integer");
+  wbTime_stop(Generic, "Importing data and creating memory on host");
+
+  wbLog(TRACE, "The input length is ", inputLength);
+
+  // Copy the input to the GPU
+  wbTime_start(GPU, "Allocating GPU memory");
+  //@@ Insert code here
+  wbTime_stop(GPU, "Allocating GPU memory");
+
+  // Determine the number of bins (num_bins) and create space on the host
+  //@@ insert code here
+  num_bins = deviceInput.back() + 1;
+  hostBins = (unsigned int *)malloc(num_bins * sizeof(unsigned int));
+
+  // Allocate a device vector for the appropriate number of bins
+  //@@ insert code here
+
+  // Create a cumulative histogram. Use thrust::counting_iterator and
+  // thrust::upper_bound
+  //@@ Insert code here
+
+  // Use thrust::adjacent_difference to turn the culumative histogram
+  // into a histogram.
+  //@@ insert code here.
+
+  // Copy the histogram to the host
+  //@@ insert code here
+
+  // Check the solution is correct
+  wbSolution(args, hostBins, num_bins);
+
+  // Free space on the host
+  //@@ insert code here
+  free(hostBins);
+
+  return 0;
+}
+```
 
 ## Trabalho para casa ##
 Você encontrará no diretório  /usr/local/cuda/cuda9-installed-samples/NVIDIA_CUDA-9.0_Samples/6_Advanced/radixSortThrust uma implementação de Radix Sort em paralelo usando Thrust. Comente o arquivo .cu e apresente-o na próxima aula. O trabalho pode ser feito em duplas. 
