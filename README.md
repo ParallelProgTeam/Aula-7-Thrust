@@ -20,7 +20,6 @@ Nos bastidores, o Thrust manipulará a alocação de espaço no dispositivo que 
 ```cpp
 #include <thrust/host_vector.h>
 #include <thrust/device_vector.h>
-
 #include <iostream>
 
 int main(void)
@@ -60,7 +59,7 @@ int main(void)
     return 0;
 }
 ```
-Salve seu programa com extensão .cu e compile-o com o nvcc. Repare que elementos individuais de um device_vector podem ser acessados usando []. Entretanto, já que esses acessos requerem chamadas a cudaMemcpy, devem ser usados com cuidado. Iremos estudar formas mais eficientes posteriormente. 
+Salve seu programa com extensão .cu e compile-o com o nvcc. Repare que elementos individuais de um *device_vector* podem ser acessados usando **[]**. Entretanto, já que esses acessos requerem chamadas a cudaMemcpy, devem ser usados com cuidado. Iremos estudar formas mais eficientes posteriormente. 
 
 ## Iteradores ##
 Agora que temos containers para nossos dados no Thrust, precisamos que nossos algoritmos acessem esses dados independentemente do tipo de dados que eles contêm. É aqui que entram os iteradores de C++. No caso de containers vetoriais, que são realmente apenas matrizes, os iteradores podem ser considerados como ponteiros para elementos de matriz. Portanto, H.begin() é um iterador que aponta para o primeiro elemento da matriz armazenada dentro do vetor H. Da mesma forma, H.end() aponta para o elemento após o último elemento do vetor H.
