@@ -259,10 +259,31 @@ Uma desvantagem de transform_iterator e zip_iterator é que pode ser complicado 
 
 Seu objetivo nesta tarefa é modificar task4.cu e escrever o código para implementar cada tipo de iterador. Os diferentes tipos de iteradores são divididos em três funções - não há necessidade de modificar a função main (). Se quiser, você pode comentar o interior das funções que você ainda precisa implementar enquanto se concentra em uma. 
 
+## Counting iterator
+´´´cpp
+/*
+Permite gerar uma sequência de valores crescentes. Nesse exemplo se inicializa um counting_iterator com o valor 10 e se acessa como se fosse um array.
+*/
+#include <iostream>
+#include <thrust/iterator/counting_iterator.h>
+#include <thrust/reduce.h>
 
+int main() {
+// create iterators
+  thrust::counting_iterator<int> first(10);
+  thrust::counting_iterator<int> last = first + 3;
 
+  std::cout << first[0] << " " ;  // returns 10
+  std::cout << first[1] << " ";  // returns 11
+  std::cout << first[100] <<  std::endl; // returns 110
 
-## Exercício: Histogramas
+// sum of [first, last)
+  std::cout << thrust::reduce(first, last) << std::endl;   // returns 33 (= 10 + 11 + 12)
+  
+  return 0;
+}
+´´´
+## Exercício: Histograma
 The purpose of this lab is to implement a histogramming algorithm for an input array of integers. This approach composes several distinct algorithmic steps to compute a histogram, which makes Thrust a valuable tools for its implementation.
 problem setup
 Consider the dataset
