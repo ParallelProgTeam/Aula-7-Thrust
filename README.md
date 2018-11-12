@@ -67,7 +67,7 @@ Agora que temos containers para nossos dados no Thrust, precisamos que nossos al
 Embora os iteradores vetoriais sejam semelhantes aos ponteiros, eles carregam mais informações com eles. Não precisamos dizer aos algoritmos de Thrust que eles estão operando em um iterador device_vector ou host_vector. Essa informação é capturada no tipo do iterador retornado pelo H.begin(). Quando uma função Thrust é chamada, ela inspeciona o tipo do iterador para determinar se deve usar uma implementação de host ou de dispositivo. Esse processo é conhecido como **static dispatching**, pois o dispatch do host/dispositivo é resolvido no momento da compilação. Observe que isso implica que não há sobrecarga de tempo de execução no processo de escalonamento.
 
 ## Funções ##
-Com contêineres e iteradores, podemos finalmente processar nossos dados usando funções. Quase todas as funções Thrust processam os dados usando iteradores apontando para vetores diferentes. Por exemplo, para copiar dados de um vetor de dispositivo para um vetor de host, é usado o código a seguir:
+Com conteiners e iteradores, podemos finalmente processar nossos dados usando funções. Quase todas as funções Thrust processam os dados usando iteradores apontando para vetores diferentes. Por exemplo, para copiar dados de um vetor de dispositivo para um vetor de host, é usado o código a seguir:
 
 ```cpp
 thrust :: copy (d_vec.begin (), d_vec.end (), h_vec.begin ());
@@ -131,29 +131,28 @@ int main(void)
 
 Conseguiu? Parabéns! Você executou código na GPU usando Thrust, sem precisar escrever código específico para a GPU. Daqui a pouco veremos como é possível, mudando só um switch do compilador switch, compilar Thrust para executar na CPU.
 
-A maioria das funções Thrust são planejadas para serem blocos de construção, permitindo que o programador construa algoritmos complexos sobre elas. O objetivo desta tarefa é oferecer a você mais experiência usando funções e iteradores Thrust e expor você a funções adicionais disponíveis.
+A maioria das funções Thrust são planejadas para serem *building blocks* (blocos de construção), permitindo que o programador construa algoritmos complexos sobre elas. O objetivo desta tarefa é oferecer a você mais experiência usando funções e iteradores Thrust e expor você a funções adicionais disponíveis.
 
-Além disso, você começará a trabalhar com "functores" nessa tarefa. Um functor é um "objeto de função", que é um objeto que pode ser chamado como se fosse uma função comum. Em C ++, um functor é apenas uma classe ou estrutura que define o operador de chamada de função. Por serem objetos, functores podem ser passados ​​(junto com seu estado) para outras funções como parâmetro. O empuxo vem com um punhado de functores predefinidos, um dos quais vamos usar nesta tarefa. Na próxima tarefa, veremos como escrever seu próprio functor e usá-lo em um algoritmo Thrust.
+Além disso, você começará a trabalhar com "functores" nessa tarefa. Um functor é um "objeto de função", que é um objeto que pode ser chamado como se fosse uma função comum. Em C++, um functor é apenas uma classe ou estrutura que define o operador de chamada de função. Por serem objetos, functores podem ser passados (junto com seu estado) para outras funções como parâmetro. Thrust vem com um punhado de functores predefinidos, um dos quais vamos usar nesta tarefa. Na próxima tarefa, veremos como escrever seu próprio functor e usá-lo em um algoritmo Thrust.
 
 Existem algumas maneiras de usar um functor. Um deles é criá-lo como se fosse um objeto normal como este:
-
+´´´cpp
 thrust :: modulus <float> modulusFunctor (...); // Crie o functor, se necessário, passe qualquer argumento para o construtor.
 float result = modulusFunctor (4.0, 2.0); // Use o functor como uma função regular
 ...
-
+´´´
 O segundo método é chamar o construtor diretamente em uma lista de argumentos para outra função:
-
+´´´cpp
 thrust :: transform (..., thrust :: modulus <float> ());
-
+´´´
 Você notará que temos que adicionar o () após <float> enquanto estamos chamando o construtor functors para instanciar o objeto da função. A função de transformação Thrust agora pode aplicar o functor a todos os elementos com os quais está trabalhando.
 
-Usando o editor abaixo, abra task2.cu como antes (clique na pasta task2, depois em task2.cu). Seu objetivo é substituir as seções de código #FIXME para conseguir o seguinte. Observe que cada item é vinculado à documentação relevante do Thrust.
-
-    Inicialize o vetor X com 0,1,2,3, ..., 9 usando thrust :: sequence
-    Preencha o vetor Z com todos os 2 usando thrust :: fill
-    Defina Y igual a X mod Z usando thrust :: transform e thrust :: modulus
-    Substitua todos os 1's em Y por 10's com impulso :: substituir
-    Imprima o resultado de Y com thrust :: copy e copie-o para o iterador de saída std :: ostream_iterator <int> (std :: cout, "\ n")
+Nesse exercício, você deve substituir as seções de código #FIXME para resolver os seguintes problemas:
+*   Inicialize o vetor X com 0,1,2,3, ..., 9 usando thrust :: sequence
+*    Preencha o vetor Z com todos os 2 usando thrust :: fill
+*    Defina Y igual a X mod Z usando thrust :: transform e thrust :: modulus
+*    Substitua todos os 1's em Y por 10's com impulso :: substituir
+*    Imprima o resultado de Y com thrust :: copy e copie-o para o iterador de saída std :: ostream_iterator <int> (std :: cout, "\ n")
 
 Para certificar-se de que você está recebendo a resposta correta, o programa imprime o vetor do dispositivo Y. Se tudo foi feito corretamente, você deverá ver a seguinte saída:
 
@@ -168,7 +167,8 @@ Para certificar-se de que você está recebendo a resposta correta, o programa i
 0
 10
 
-Tarefa 3
+
+
 
 Thrust fornece alguns functores internos para você usar, mas o poder real vem da criação de seus próprios functores. Para essa tarefa, removeremos a chamada para thrust :: replace do código na Tarefa nº 2 e, em vez disso, substituiremos essa funcionalidade por um functor personalizado usado na chamada thrust :: transform. Um exemplo de um functor customizado é o seguinte functor unário que retorna o quadrado do valor de entrada:
 
@@ -230,40 +230,11 @@ Em [10]:
 Criando esse functor personalizado, conseguimos eliminar a chamada thrust :: replace, o que contribui para uma aplicação mais eficiente.
 Tarefa 4
 
-Até agora, lidamos apenas com iteradores básicos que permitem ao Thrust percorrer todos os elementos de um vetor. Os iteradores extravagantes executam uma variedade de propósitos valiosos. Nesta tarefa, mostraremos como os iteradores sofisticados nos permitem atacar uma classe mais ampla de problemas com os algoritmos Thrust padrão. Apesar de não cobrirmos todos os iteradores de fantasia nesta tarefa, cobriremos três deles.
-
-O mais simples do grupo, constant_iterator é simplesmente um iterador que retorna o mesmo valor sempre que o desreferimos. No exemplo a seguir, inicializamos um constant_iterator com o valor 10.
-
-// criar iteradores
-impulso :: constant_iterator primeiro (10);
-thrust :: constant_iterator last = primeiro + 3; // Defina o último elemento como 3 depois do começo
-
-// soma de [primeiro, último)
-thrust :: reduce (primeiro, último); // retorna 30 (isto é, 10 + 10 + 10)
-
-O transform_iterator nos permite aplicar a técnica de combinar algoritmos separados, sem precisar depender do Thrust para fornecer uma versão especial do algoritmo transform_xxx. Essa tarefa mostra outra maneira de fundir uma transformação com uma redução, desta vez com apenas redução simples aplicada a um transform_iterator.
-
-O exemplo a seguir imprime todos os elementos no vetor de valores, depois de fixá-los entre 0 e 100.
-
-thrust :: copy (thrust :: make_transform_iterator (values.begin (), clamp (0, 100)), // primeiro elemento
-             thrust :: make_transform_iterator (values.end (), clamp (0, 100)), // elemento final
-             std :: ostream_iterator (std :: cout, ""));
-
-Finalmente, o zip_iterator é um gadget extremamente útil: ele toma múltiplas seqüências de entrada e produz uma sequência de tuplas. O exemplo a seguir aplica o arbitrary_functor a cada tupla, onde cada tupla é composta de elementos dos vetores A, B, C e D. Você pode ver detalhes sobre a função thrust :: for_each aqui.
-
-thrust :: for_each (thrust :: make_zip_iterator (thrust :: make_tuple (A. begin (), B. begin (), C. begin (), D. begin ())),
-                 thrust :: make_zip_iterator (thrust :: make_tuple (A.end (), B.end (), C.end (), D.end ())),
-                 arbitrary_functor ());
-
-Uma desvantagem de transform_iterator e zip_iterator é que pode ser complicado especificar o tipo completo do iterador, o que pode ser bastante demorado. Por esse motivo, é uma prática comum simplesmente colocar a chamada em make_transform_iterator ou make_zip_iterator nos argumentos do algoritmo que está sendo invocado.
-
-Seu objetivo nesta tarefa é modificar task4.cu e escrever o código para implementar cada tipo de iterador. Os diferentes tipos de iteradores são divididos em três funções - não há necessidade de modificar a função main (). Se quiser, você pode comentar o interior das funções que você ainda precisa implementar enquanto se concentra em uma. 
+Até agora, lidamos apenas com iteradores básicos que permitem ao Thrust percorrer todos os elementos de um vetor. Nesta tarefa, mostraremos como os iteradores sofisticados nos permitem atacar uma classe mais ampla de problemas que com os algoritmos Thrust padrão. 
+O mais simples do grupo, **constant_iterator**, é simplesmente um iterador que retorna o mesmo valor sempre que o desreferimos. Ele permite gerar uma sequência de valores crescentes. Nesse exemplo se inicializa um counting_iterator com o valor 10 e se acessa como se fosse um array.
 
 ## Counting iterator
 ´´´cpp
-/*
-Permite gerar uma sequência de valores crescentes. Nesse exemplo se inicializa um counting_iterator com o valor 10 e se acessa como se fosse um array.
-*/
 #include <iostream>
 #include <thrust/iterator/counting_iterator.h>
 #include <thrust/reduce.h>
@@ -283,6 +254,108 @@ int main() {
   return 0;
 }
 ´´´
+
+<! O **transform_iterator** nos permite aplicar a técnica de combinar algoritmos separados, sem precisar depender do Thrust para fornecer uma versão especial do algoritmo transform_xxx. Essa tarefa mostra outra maneira de fundir uma transformação com uma redução, desta vez com apenas redução simples aplicada a um transform_iterator.
+
+O exemplo a seguir imprime todos os elementos no vetor de valores, depois de fixá-los entre 0 e 100.
+
+thrust :: copy (thrust :: make_transform_iterator (values.begin (), clamp (0, 100)), // primeiro elemento
+             thrust :: make_transform_iterator (values.end (), clamp (0, 100)), // elemento final
+             std :: ostream_iterator (std :: cout, ""));
+
+Finalmente, o zip_iterator é um gadget extremamente útil: ele toma múltiplas seqüências de entrada e produz uma sequência de tuplas. O exemplo a seguir aplica o arbitrary_functor a cada tupla, onde cada tupla é composta de elementos dos vetores A, B, C e D. Você pode ver detalhes sobre a função thrust :: for_each aqui.
+
+thrust :: for_each (thrust :: make_zip_iterator (thrust :: make_tuple (A. begin (), B. begin (), C. begin (), D. begin ())),
+                 thrust :: make_zip_iterator (thrust :: make_tuple (A.end (), B.end (), C.end (), D.end ())),
+                 arbitrary_functor ());
+
+Uma desvantagem de transform_iterator e zip_iterator é que pode ser complicado especificar o tipo completo do iterador, o que pode ser bastante demorado. Por esse motivo, é uma prática comum simplesmente colocar a chamada em make_transform_iterator ou make_zip_iterator nos argumentos do algoritmo que está sendo invocado.
+
+Seu objetivo nesta tarefa é modificar task4.cu e escrever o código para implementar cada tipo de iterador. Os diferentes tipos de iteradores são divididos em três funções - não há necessidade de modificar a função main (). Se quiser, você pode comentar o interior das funções que você ainda precisa implementar enquanto se concentra em uma. >
+
+*upper_bound* é uma versão vetorizada de uma busca binária: para cada iterador v em [values_first, values_last) tenta encontrar o valor  *v em um intervalo ordenado  [first, last). Returna o índice da última posaição onde o valor poderia ser inserido sem violar a ordenação.
+
+Parameters
+    first	The beginning of the ordered sequence.
+    last	The end of the ordered sequence.
+    values_first	The beginning of the search values sequence.
+    values_last	The end of the search values sequence.
+    result	The beginning of the output sequence.
+
+Template Parameters
+    ForwardIterator	is a model of Forward Iterator.
+    InputIterator	is a model of Input Iterator. and InputIterator's value_type is LessThanComparable.
+    OutputIterator	is a model of Output Iterator. and ForwardIterator's difference_type is convertible to OutputIterator's value_type.
+
+Precondition
+    The ranges [first,last) and [result, result + (last - first)) shall not overlap.
+
+The following code snippet demonstrates how to use upper_bound to search for multiple values in a ordered range.
+´´´cpp
+#include <thrust/binary_search.h>
+#include <thrust/device_vector.h>
+...
+thrust::device_vector<int> input(5);
+input[0] = 0;
+input[1] = 2;
+input[2] = 5;
+input[3] = 7;
+input[4] = 8;
+thrust::device_vector<int> values(6);
+values[0] = 0; 
+values[1] = 1;
+values[2] = 2;
+values[3] = 3;
+values[4] = 8;
+values[5] = 9;
+thrust::device_vector<unsigned int> output(6);
+thrust::upper_bound(input.begin(), input.end(),
+                    values.begin(), values.end(),
+                    output.begin());
+// output is now [1, 1, 2, 2, 5, 5]
+´´´
+_host__ __device__ OutputIterator thrust::adjacent_difference 	( 	const thrust::detail::execution_policy_base< DerivedPolicy > &  	exec,
+		InputIterator  	first,
+		InputIterator  	last,
+		OutputIterator  	result 
+	) 		
+
+adjacent_difference calculates the differences of adjacent elements in the range [first, last). That is, *first is assigned to *result, and, for each iterator i in the range [first + 1, last), the difference of *i and *(i - 1) is assigned to *(result + (i - first)).
+
+This version of adjacent_difference uses operator- to calculate differences.
+
+The algorithm's execution is parallelized as determined by exec.
+
+Parameters
+    exec	The execution policy to use for parallelization.
+    first	The beginning of the input range.
+    last	The end of the input range.
+    result	The beginning of the output range.
+
+Returns
+    The iterator result + (last - first)
+
+Template Parameters
+    DerivedPolicy	The name of the derived execution policy.
+    InputIterator	is a model of Input Iterator, and x and y are objects of InputIterator's value_type, then x - is defined, and InputIterator's value_type is convertible to a type in OutputIterator's set of value_types, and the return type of x - y is convertible to a type in OutputIterator's set of value_types.
+    OutputIterator	is a model of Output Iterator.
+
+Remarks
+    Note that result is permitted to be the same iterator as first. This is useful for computing differences "in place".
+
+The following code snippet demonstrates how to use adjacent_difference to compute the difference between adjacent elements of a range using the thrust::device execution policy:
+´´´cpp
+#include <thrust/adjacent_difference.h>
+#include <thrust/device_vector.h>
+#include <thrust/execution_policy.h>
+...
+int h_data[8] = {1, 2, 1, 2, 1, 2, 1, 2};
+thrust::device_vector<int> d_data(h_data, h_data + 8);
+thrust::device_vector<int> d_result(8);
+thrust::adjacent_difference(thrust::device, d_data.begin(), d_data.end(), d_result.begin());
+// d_result is now [1, 1, -1, 1, -1, 1, -1, 1]
+´´´
+
 ## Exercício: Histograma
 The purpose of this lab is to implement a histogramming algorithm for an input array of integers. This approach composes several distinct algorithmic steps to compute a histogram, which makes Thrust a valuable tools for its implementation.
 problem setup
