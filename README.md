@@ -59,7 +59,11 @@ int main(void)
     return 0;
 }
 ```
-Salve seu programa com extensão .cu e compile-o com o nvcc. Repare que elementos individuais de um *device_vector* podem ser acessados usando **[ ]**. Entretanto, já que esses acessos requerem chamadas a cudaMemcpy, devem ser usados com cuidado. Iremos estudar formas mais eficientes posteriormente. 
+Salve seu programa com extensão .cu e compile-o com o 
+```bash
+nvcc -O2 -arch = sm_30 task3 / task3.cu -run
+```
+Repare que elementos individuais de um *device_vector* podem ser acessados usando **[ ]**. Entretanto, já que esses acessos requerem chamadas a cudaMemcpy, devem ser usados com cuidado. Iremos estudar formas mais eficientes posteriormente. 
 
 ## Iteradores ##
 Agora que temos containers para nossos dados no Thrust, precisamos que nossos algoritmos acessem esses dados independentemente do tipo de dados que eles contêm. É aqui que entram os iteradores de C++. No caso de containers vetoriais, que são realmente apenas matrizes, os iteradores podem ser considerados como ponteiros para elementos de matriz. Portanto, H.begin() é um iterador que aponta para o primeiro elemento da matriz armazenada dentro do vetor H. Da mesma forma, H.end() aponta para o elemento após o último elemento do vetor H.
@@ -133,7 +137,7 @@ Conseguiu? Parabéns! Você executou código na GPU usando Thrust, sem precisar 
 
 A maioria das funções Thrust são planejadas para serem *building blocks* (blocos de construção), permitindo que o programador construa algoritmos complexos sobre elas. O objetivo desta tarefa é oferecer a você mais experiência usando funções e iteradores Thrust e expor você a funções adicionais disponíveis.
 
-Além disso, você começará a trabalhar com "functores" nessa tarefa. Um functor é um "objeto de função", que é um objeto que pode ser chamado como se fosse uma função comum. Em C++, um functor é apenas uma classe ou estrutura que define o operador de chamada de função. Por serem objetos, functores podem ser passados (junto com seu estado) para outras funções como parâmetro. Thrust vem com um punhado de functores predefinidos, um dos quais vamos usar nesta tarefa. Na próxima tarefa, veremos como escrever seu próprio functor e usá-lo em um algoritmo Thrust.
+Além disso, você começará a trabalhar com "functors" nessa tarefa. Um functor é um "objeto de função", que é um objeto que pode ser chamado como se fosse uma função comum. Em C++, um functor é apenas uma classe ou estrutura que define o operador de chamada de função. Por serem objetos, functores podem ser passados (junto com seu estado) para outras funções como parâmetro. Thrust vem com um punhado de functores predefinidos, um dos quais vamos usar nesta tarefa. Na próxima tarefa, veremos como escrever seu próprio functor e usá-lo em um algoritmo Thrust.
 
 Existem algumas maneiras de usar um functor. Um deles é criá-lo como se fosse um objeto normal como este:
 ´´´cpp
@@ -147,16 +151,15 @@ thrust :: transform (..., thrust :: modulus <float> ());
 ´´´
 Você notará que temos que adicionar o () após <float> enquanto estamos chamando o construtor functors para instanciar o objeto da função. A função de transformação Thrust agora pode aplicar o functor a todos os elementos com os quais está trabalhando.
 
-### Tarefa nº 3
+<!--
+### Exercício 3
 Nesse exercício, você deve substituir as seções de código #FIXME para resolver os seguintes problemas:
 *   Inicialize o vetor X com 0,1,2,3, ..., 9 usando thrust::sequence
 *    Preencha o vetor Z com todos os 2 usando thrust::fill
-*    Defina Y igual a X mod Z usando thrust::transform e thrust :: modulus
+*    Defina Y igual a X mod Z usando thrust::transform e thrust::modulus
 *    Substitua todos os 1's em Y por 10's com thrust::replace
 *    Imprima o resultado de Y com thrust::copy e copie-o para o iterador de saída std::ostream_iterator<int>(std::cout, "\n")
-
 Para certificar-se de que você está recebendo a resposta correta, o programa imprime o vetor do dispositivo Y. Se tudo foi feito corretamente, você deverá ver a seguinte saída:
-
 0
 10
 0
@@ -167,9 +170,7 @@ Para certificar-se de que você está recebendo a resposta correta, o programa i
 10
 0
 10
-
 Thrust fornece alguns functores internos para você usar, mas o poder real vem da criação de seus próprios functores. Para essa tarefa, removeremos a chamada para thrust::replace do código na Tarefa nº 3 e, em vez disso, substituiremos essa funcionalidade por um functor personalizado usado na chamada thrust::transform. Um exemplo de um functor customizado é o seguinte functor unário que retorna o quadrado do valor de entrada:
-
 template <typename T>
 quadrado da estrutura
 {
@@ -179,15 +180,10 @@ quadrado da estrutura
     return x * x;
   }
 };
-
 A linha __host__ __device__ acima diz ao compilador nvcc para compilar uma versão do Host e do Dispositivo da função abaixo dela. Isso mantém a portabilidade entre CPUs e GPUs.
-
 A maneira como esse functor funciona é que estamos sobrescrevendo o operador () da estrutura. Este é o mais versátil dos operadores sobrecarregáveis, pois pode aceitar qualquer número e tipo de entradas e retornar qualquer tipo de saída. Dessa forma, os algoritmos Thrust precisam simplesmente chamar outputType = someFunctor (inputType1, inputType2, ..., inputTypeN) sem precisar entender o que a função faz. Isso contribui para uma biblioteca muito poderosa e flexível!
-
 Nota: Não é necessário tornar seu functor personalizado um modelo struct, mas adiciona muita flexibilidade ao seu código.
-
-Em task3.cu abaixo, conclua a criação do functor modZeroOrTen e, em seguida, chame-o a partir da função thrust :: transform. Se tudo for feito corretamente, você deve obter a mesma saída da Tarefa 2, que é:
-
+No exercício abaixo, conclua a criação do functor modZeroOrTen e, em seguida, chame-o a partir da função thrust::transform. Se tudo for feito corretamente, você deve obter a mesma saída do exercício anterior, que é:
 0
 10
 0
@@ -198,16 +194,14 @@ Em task3.cu abaixo, conclua a criação do functor modZeroOrTen e, em seguida, c
 10
 0
 10
+*Dica # 1: O functor personalizado para o nosso código precisa ser um operador binário - são necessários dois valores como entrada. O exemplo de functor quadrado mostrado é apenas um operador unário.
+*Dica # 2: Se você está criando o objeto functor quadrado diretamente na lista de argumentos thrust :: transform, não esqueça de adicionar o () para chamar o construtor.
+*Dica # 3: Não se esqueça de adicionar, no mínimo, a palavra-chave __device__ antes da sua função, para que o compilador saiba compilar esta função para a GPU.
+Criando esse functor personalizado, conseguimos eliminar a chamada thrust :: replace, o que contribui para uma aplicação mais eficiente.
+-->
 
-Dica # 1
-O functor personalizado para o nosso código precisa ser um operador binário - são necessários dois valores como entrada. O exemplo de functor quadrado mostrado é apenas um operador unário.
-
-Dica # 2
-Se você está criando o objeto functor quadrado diretamente na lista de argumentos thrust :: transform, não esqueça de adicionar o () para chamar o construtor.
-
-Dica # 3
-Não se esqueça de adicionar, no mínimo, a palavra-chave __device__ antes da sua função, para que o compilador saiba compilar esta função para a GPU.
-
+### Exemplo: Um bom motivo para usarmos functors:
+```cpp
 #include <thrust/host_vector.h>
 #include <thrust/device_vector.h>
 #include <thrust/reduce.h>
@@ -234,17 +228,15 @@ int main(void)
 
 	return 0;
 }
+```
+Não é muito eficiente chamar thrust::reduce três vezes no mesmo vetor. É mais eficiente chamá-lo uma vez e coletar a soma, min e max de uma só vez. Para fazer isso, precisamos escrever um 'functor' esquisito para passar para thrust::reduce.
 
-(Try this in NetRun now!)
-
-It's not very efficient (see below) to call thrust::reduce three times on the same vector.  It's more efficient to call it once, and collect up the sum, min, and max all in one go.  To do this, we need to write a weird 'functor' to pass to thrust::reduce.
-''çpp
+```cpp
 #include <thrust/host_vector.h>
 #include <thrust/device_vector.h>
 #include <thrust/reduce.h>
 #include <cstdlib>
 
-// This is used to store everything we know about the ints seen so far:
 class sum_min_max {
 public:
 	int sum, min, max;
@@ -282,31 +274,10 @@ int main(void)
 	return 0;
 }
 
-(Try this in NetRun now!)
+//This same idea could probably be better written as a thrust::tuple.
+```
 
-This same idea could probably be better written as a thrust::tuple.
-'''
-
-Em [10]:
-
-# Execute esta célula para compilar o task3.cu e, se for bem-sucedido, execute o programa
-
-! nvcc -O2 -arch = sm_30 task3 / task3.cu -run
-
-0
-10
-0
-10
-0
-10
-0
-10
-0
-10
-
-Criando esse functor personalizado, conseguimos eliminar a chamada thrust :: replace, o que contribui para uma aplicação mais eficiente.
-Tarefa 4
-
+## Exemplo: 
 Até agora, lidamos apenas com iteradores básicos que permitem ao Thrust percorrer todos os elementos de um vetor. Nesta tarefa, mostraremos como os iteradores sofisticados nos permitem atacar uma classe mais ampla de problemas que com os algoritmos Thrust padrão. 
 O mais simples do grupo, **constant_iterator**, é simplesmente um iterador que retorna o mesmo valor sempre que o desreferimos. Ele permite gerar uma sequência de valores crescentes. Nesse exemplo se inicializa um counting_iterator com o valor 10 e se acessa como se fosse um array.
 
@@ -332,42 +303,32 @@ int main() {
 }
 ´´´
 
-<! O **transform_iterator** nos permite aplicar a técnica de combinar algoritmos separados, sem precisar depender do Thrust para fornecer uma versão especial do algoritmo transform_xxx. Essa tarefa mostra outra maneira de fundir uma transformação com uma redução, desta vez com apenas redução simples aplicada a um transform_iterator.
-
+<!-- O **transform_iterator** nos permite aplicar a técnica de combinar algoritmos separados, sem precisar depender do Thrust para fornecer uma versão especial do algoritmo transform_xxx. Essa tarefa mostra outra maneira de fundir uma transformação com uma redução, desta vez com apenas redução simples aplicada a um transform_iterator.
 O exemplo a seguir imprime todos os elementos no vetor de valores, depois de fixá-los entre 0 e 100.
-
 thrust :: copy (thrust :: make_transform_iterator (values.begin (), clamp (0, 100)), // primeiro elemento
              thrust :: make_transform_iterator (values.end (), clamp (0, 100)), // elemento final
              std :: ostream_iterator (std :: cout, ""));
-
 Finalmente, o zip_iterator é um gadget extremamente útil: ele toma múltiplas seqüências de entrada e produz uma sequência de tuplas. O exemplo a seguir aplica o arbitrary_functor a cada tupla, onde cada tupla é composta de elementos dos vetores A, B, C e D. Você pode ver detalhes sobre a função thrust :: for_each aqui.
-
 thrust :: for_each (thrust :: make_zip_iterator (thrust :: make_tuple (A. begin (), B. begin (), C. begin (), D. begin ())),
                  thrust :: make_zip_iterator (thrust :: make_tuple (A.end (), B.end (), C.end (), D.end ())),
                  arbitrary_functor ());
-
 Uma desvantagem de transform_iterator e zip_iterator é que pode ser complicado especificar o tipo completo do iterador, o que pode ser bastante demorado. Por esse motivo, é uma prática comum simplesmente colocar a chamada em make_transform_iterator ou make_zip_iterator nos argumentos do algoritmo que está sendo invocado.
-
-Seu objetivo nesta tarefa é modificar task4.cu e escrever o código para implementar cada tipo de iterador. Os diferentes tipos de iteradores são divididos em três funções - não há necessidade de modificar a função main (). Se quiser, você pode comentar o interior das funções que você ainda precisa implementar enquanto se concentra em uma. >
+Seu objetivo nesta tarefa é modificar task4.cu e escrever o código para implementar cada tipo de iterador. Os diferentes tipos de iteradores são divididos em três funções - não há necessidade de modificar a função main (). Se quiser, você pode comentar o interior das funções que você ainda precisa implementar enquanto se concentra em uma. -->
 
 *upper_bound* é uma versão vetorizada de uma busca binária: para cada iterador v em [values_first, values_last) tenta encontrar o valor  *v em um intervalo ordenado  [first, last). Returna o índice da última posaição onde o valor poderia ser inserido sem violar a ordenação.
-
 Parameters
     first	The beginning of the ordered sequence.
     last	The end of the ordered sequence.
     values_first	The beginning of the search values sequence.
     values_last	The end of the search values sequence.
     result	The beginning of the output sequence.
-
 Template Parameters
     ForwardIterator	is a model of Forward Iterator.
     InputIterator	is a model of Input Iterator. and InputIterator's value_type is LessThanComparable.
     OutputIterator	is a model of Output Iterator. and ForwardIterator's difference_type is convertible to OutputIterator's value_type.
-
 Precondition
     The ranges [first,last) and [result, result + (last - first)) shall not overlap.
-
-The following code snippet demonstrates how to use upper_bound to search for multiple values in a ordered range.
+Exemplo:
 ´´´cpp
 #include <thrust/binary_search.h>
 #include <thrust/device_vector.h>
@@ -391,36 +352,17 @@ thrust::upper_bound(input.begin(), input.end(),
                     output.begin());
 // output is now [1, 1, 2, 2, 5, 5]
 ´´´
-_host__ __device__ OutputIterator thrust::adjacent_difference 	( 	const thrust::detail::execution_policy_base< DerivedPolicy > &  	exec,
+_host__ __device__ OutputIterator thrust::adjacent_difference 	( const thrust::detail::execution_policy_base< DerivedPolicy > &  	exec,
 		InputIterator  	first,
 		InputIterator  	last,
 		OutputIterator  	result 
 	) 		
+´´´
+	
+adjacent_difference calcula as diferenças dos elementos adjacentes no intervalo [first, last]. Ou seja, \*first é atribuído a \*result e, para cada iterador i no intervalo [first + 1, last], a diferença de \*i e \*(i - 1) é designada para \*(result + (i - first)).
 
-adjacent_difference calculates the differences of adjacent elements in the range [first, last). That is, *first is assigned to *result, and, for each iterator i in the range [first + 1, last), the difference of *i and *(i - 1) is assigned to *(result + (i - first)).
+O trecho de código a seguir demonstra como usar adjacent_difference para calcular a diferença entre elementos adjacentes de um intervalo usando a política de execução thrust::device:
 
-This version of adjacent_difference uses operator- to calculate differences.
-
-The algorithm's execution is parallelized as determined by exec.
-
-Parameters
-    exec	The execution policy to use for parallelization.
-    first	The beginning of the input range.
-    last	The end of the input range.
-    result	The beginning of the output range.
-
-Returns
-    The iterator result + (last - first)
-
-Template Parameters
-    DerivedPolicy	The name of the derived execution policy.
-    InputIterator	is a model of Input Iterator, and x and y are objects of InputIterator's value_type, then x - is defined, and InputIterator's value_type is convertible to a type in OutputIterator's set of value_types, and the return type of x - y is convertible to a type in OutputIterator's set of value_types.
-    OutputIterator	is a model of Output Iterator.
-
-Remarks
-    Note that result is permitted to be the same iterator as first. This is useful for computing differences "in place".
-
-The following code snippet demonstrates how to use adjacent_difference to compute the difference between adjacent elements of a range using the thrust::device execution policy:
 ´´´cpp
 #include <thrust/adjacent_difference.h>
 #include <thrust/device_vector.h>
@@ -434,101 +376,150 @@ thrust::adjacent_difference(thrust::device, d_data.begin(), d_data.end(), d_resu
 ´´´
 
 ## Exercício: Histograma
-The purpose of this lab is to implement a histogramming algorithm for an input array of integers. This approach composes several distinct algorithmic steps to compute a histogram, which makes Thrust a valuable tools for its implementation.
-problem setup
-Consider the dataset
+O objetivo deste laboratório é implementar um algoritmo de histograma para uma matriz de entrada de inteiros. Essa abordagem compõe várias etapas algorítmicas distintas para calcular um histograma, o que torna o Thrust uma ferramenta valiosa para sua implementação.
+Considere o conjunto de dados:
 input = [2 1 0 0 2 2 1 1 1 1 4]
-A resulting histogram would be
-histogram = [2 5 3 0 1]
-reflecting 2 zeros, 5 ones, 3 twos, 0 threes, and one 4 in the input dataset. Note that the number of bins is equal to
-max(input) + 1
+Um histograma resultante seria
+histograma = [2 5 3 0 1]
+refletindo 2 zeros, 5 uns, 3 dois, 0 três e um 4 no dataset de entrada. Observe que o número de compartimentos é igual a
+max (entrada) + 1
 
-histogram sort approach
-First, sort the input data using thrust::sort. Continuing with the original example:
-sorted = [0 0 1 1 1 1 1 2 2 2 4]
-Determine the number of bins by inspecting the last element of the list and adding 1:
-num_bins = sorted.back() + 1
+### Abordagem de ordenação do histograma
+Primeiro, classifique os dados de entrada usando thrust :: sort. Continuando com o exemplo original:
+classificado = [0 0 1 1 1 1 1 2 2 2 4]
+Determine o número de bins inspecionando o último elemento da lista e adicionando 1:
+num_bins = sorted.back () + 1
 
-To compute the histogram, we can compute the culumative histogram and then work backwards. To do this in Thrust, use thrust::upper_bound. upper_bound takes an input data range (the sorted input) and a set of search values, and for each search value will report the largest index in the input range that the search value could be inserted into without changing the sorted order of the inputs. For example,
-[2 8 11 11 12] = thrust::upper_bound([0 0 1 1 1 1 1 2 2 2 4], // input [0 1 2 3 4]) // search
-By carefully crafting the search data, thrust::upper_bound will produce a cumulative histogram. The search data must be a range [0,num_bins).
-Once the cumulative histogram is produced, use thrust::adjacent_different to compute the histogram.
-[2 5 3 0 1] = thrust::adjacent_difference([2 8 11 11 12])
-Check the thrust documentation for details of how to use upper_bound and adjacent_difference. Instead of constructing the search array in device memory, you may be able to use thrust::counting_iterator.
-
-instructions
-Edit the code in the code tab to perform the following:
-• allocate space for input on the GPU • copy host memory to device
-• invoke thrust functions
-• copy results from device to host
-Instructions about where to place each part of the code is demarcated by the //@@ comment lines.
+Para calcular o histograma, podemos calcular o histograma culomativo e depois retroceder. Para fazer isso no Thrust, use thrust::upper_bound. *upper_bound* recebe um intervalo de dados de entrada (a entrada classificada) e um conjunto de valores de pesquisa e, para cada valor de pesquisa, reportará o maior índice no intervalo de entrada no qual o valor da pesquisa poderia ser inserido sem alterar a ordem classificada das entradas. Por exemplo,
+[2 8 11 11 12] = thrust::upper_bound ([0 0 1 1 1 1 1 2 2 2 4], // entrada [0 1 2 3 4]) // pesquisa
+Criando cuidadosamente os dados de pesquisa, thrust::upper_bound produzirá um histograma cumulativo. Os dados de pesquisa devem ser um intervalo [0, num_bins).
+Uma vez que o histograma cumulativo é produzido, use thrust :: adjacent_different para calcular o histograma.
+[2 5 3 0 1] = thrust::adjacent_difference ([2 8 11 11 12])
+Verifique a documentação de empuxo para obter detalhes sobre como usar upper_bound e adjacent_difference. Em vez de construir a matriz de pesquisa na memória do dispositivo, você poderá usar thrust::counting_iterator.
 
 ## Instruções
-The executable generated as a result of compiling the lab can be run using the following command:
-./ThrustHistogramSort_Template -e <expected.raw> \ -i <input.raw> -o <output.raw> -t integral_vector
-2
-where <expected.raw> is the expected output, <input.raw> is the input dataset, and <output.raw> is an optional path to store the results. The datasets can be generated using the dataset generator built as part of the compilation process.
-attribution
-This is a simplified version of the material presented in the Thrust repository aqui: https://github.com/thrust/thrust/blob/master/examples/histogram.cu
-
-code template
-The following code is suggested as a starting point for students. The code handles the import and export as well as the checking of the solution. Stu- dents are expected to insert their code is the sections demarcated with //@@. Students expected the other code unchanged. 
+O código a seguir é sugerido como ponto de partida. Insira seu código nas seções demarcadas com #FIXME. O restante do código deve permanecer inalterado. 
 
 ```cpp
-#include <thrust/adjacent_difference.h>
-#include <thrust/binary_search.h>
-#include <thrust/copy.h>
 #include <thrust/device_vector.h>
-#include <thrust/iterator/counting_iterator.h>
+#include <thrust/host_vector.h>
 #include <thrust/sort.h>
+#include <thrust/copy.h>
+#include <thrust/random.h>
+#include <thrust/inner_product.h>
+#include <thrust/binary_search.h>
+#include <thrust/adjacent_difference.h>
+#include <thrust/iterator/constant_iterator.h>
+#include <thrust/iterator/counting_iterator.h>
 
-int main(int argc, char *argv[]) {
-  wbArg_t args;
-  int inputLength, num_bins;
-  unsigned int *hostInput, *hostBins;
+#include <iostream>
+#include <iomanip>
+#include <iterator>
 
-  args = wbArg_read(argc, argv);
+// This example illustrates a method for computing a
+// histogram [1] with Thrust.  We consider standard "dense"
+// histograms, where some bins may have zero entries
+// For example, histograms for the data set
+//    [2 1 0 0 2 2 1 1 1 1 4]
+// which contains 2 zeros, 5 ones, and 3 twos and 1 four, is
+//    [2 5 3 0 1]
+// using the dense method 
+//
+// The best histogramming methods depends on the application.
+// If the number of bins is relatively small compared to the 
+// input size, then the binary search-based dense histogram
+// method is probably best.  If the number of bins is comparable
+// to the input size, then the reduce_by_key-based sparse method 
+// ought to be faster.  When in doubt, try both and see which
+// is fastest.
+//
+// [1] http://en.wikipedia.org/wiki/Histogram
 
-  wbTime_start(Generic, "Importing data and creating memory on host");
-  hostInput = (unsigned int *)wbImport(wbArg_getInputFile(args, 0),
-                                       &inputLength, "Integer");
-  wbTime_stop(Generic, "Importing data and creating memory on host");
 
-  wbLog(TRACE, "The input length is ", inputLength);
+// simple routine to print contents of a vector
+template <typename Vector>
+void print_vector(const std::string& name, const Vector& v)
+{
+  typedef typename Vector::value_type T;
+  std::cout << "  " << std::setw(20) << name << "  ";
+  thrust::copy(v.begin(), v.end(), std::ostream_iterator<T>(std::cout, " "));
+  std::cout << std::endl;
+}
 
-  // Copy the input to the GPU
-  wbTime_start(GPU, "Allocating GPU memory");
-  //@@ Insert code here
-  wbTime_stop(GPU, "Allocating GPU memory");
+// dense histogram using binary search
+template <typename Vector1, 
+          typename Vector2>
+void dense_histogram(const Vector1& input,
+                           Vector2& histogram)
+{
+  typedef typename Vector1::value_type ValueType; // input value type
+  typedef typename Vector2::value_type IndexType; // histogram index type
 
-  // Determine the number of bins (num_bins) and create space on the host
-  //@@ insert code here
-  num_bins = deviceInput.back() + 1;
-  hostBins = (unsigned int *)malloc(num_bins * sizeof(unsigned int));
+  // criar device_vector data e copiar dados de input em data (pode ignorar se o input pode ser destruído)
+  #FIXME  
+  
+  // print the initial data
+  print_vector("initial data", data);
 
-  // Allocate a device vector for the appropriate number of bins
-  //@@ insert code here
+  // ordenar o device_vector data para juntar os elementos iguais
+  #FIXME
+      
+  // print the sorted data
+  print_vector("sorted data", data);
 
-  // Create a cumulative histogram. Use thrust::counting_iterator and
-  // thrust::upper_bound
-  //@@ Insert code here
+  // number of histogram bins is equal to the maximum value plus one
+  IndexType num_bins = data.back() + 1;
 
-  // Use thrust::adjacent_difference to turn the culumative histogram
-  // into a histogram.
-  //@@ insert code here.
+  // resize histogram storage
+  histogram.resize(num_bins);
+  
+  // encontrar o final de cada bin de valores: (dica: use thrust::upper_bound)
+    thrust::counting_iterator<IndexType> search_begin(0);
+    #FIXME
+  
+  // print the cumulative histogram
+  print_vector("cumulative histogram", histogram);
 
-  // Copy the histogram to the host
-  //@@ insert code here
+  // computar o histograma calculando as diferenças no histograma cumulativo (dica: use thrust::adjacent_difference)
+  #FIXME
+    
+  // print the histogram
+  print_vector("histogram", histogram);
+}
 
-  // Check the solution is correct
-  wbSolution(args, hostBins, num_bins);
+int main(void)
+{
+  thrust::default_random_engine rng;
+  thrust::uniform_int_distribution<int> dist(0, 9);
 
-  // Free space on the host
-  //@@ insert code here
-  free(hostBins);
+  const int N = 40;
+  const int S = 4;
+
+  // generate random data on the host
+  thrust::host_vector<int> input(N);
+  for(int i = 0; i < N; i++)
+  {
+    int sum = 0;
+    for (int j = 0; j < S; j++)
+      sum += dist(rng);
+    input[i] = sum / S;
+  }
+
+  // demonstrate dense histogram method
+  {
+    std::cout << "Dense Histogram" << std::endl;
+    thrust::device_vector<int> histogram;
+    dense_histogram(input, histogram);
+  }
 
   return 0;
 }
+
+Histogram
+          initial data  3 4 3 5 8 5 6 6 4 4 5 3 2 5 6 3 1 3 2 3 6 5 3 3 3 2 4 2 3 3 2 5 5 5 8 2 5 6 6 3 
+           sorted data  1 2 2 2 2 2 2 3 3 3 3 3 3 3 3 3 3 3 3 4 4 4 4 5 5 5 5 5 5 5 5 5 6 6 6 6 6 6 8 8 
+  cumulative histogram  0 1 7 19 23 32 38 38 40 
+             histogram  0 1 6 12 4 9 6 0 2 
 ```
 
 ## Trabalho para casa ##
