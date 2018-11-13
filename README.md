@@ -141,15 +141,16 @@ A maioria das funções Thrust são planejadas para serem *building blocks* (blo
 Um functor é um "objeto de função", que é um objeto que pode ser chamado como se fosse uma função comum. Em C++, um functor é apenas uma classe ou estrutura que define o operador de chamada de função. Por serem objetos, functores podem ser passados (junto com seu estado) para outras funções como parâmetro. Thrust vem com um punhado de functores predefinidos, um dos quais vamos usar nesta tarefa. Na próxima tarefa, veremos como escrever seu próprio functor e usá-lo em um algoritmo Thrust.
 
 Existem algumas maneiras de usar um functor. Um deles é criá-lo como se fosse um objeto normal como este:
-´´´cpp
+```cpp
 thrust :: modulus <float> modulusFunctor (...); // Crie o functor, se necessário, passe qualquer argumento para o construtor.
 float result = modulusFunctor (4.0, 2.0); // Use o functor como uma função regular
 ...
-´´´
+```
 O segundo método é chamar o construtor diretamente em uma lista de argumentos para outra função:
-´´´cpp
+	
+```cpp
 thrust :: transform (..., thrust :: modulus <float> ());
-´´´
+```
 Você notará que temos que adicionar o () após <float> enquanto estamos chamando o construtor functors para instanciar o objeto da função. A função de transformação Thrust agora pode aplicar o functor a todos os elementos com os quais está trabalhando.
 
 <!--
@@ -330,7 +331,7 @@ Template Parameters
 Precondition
     The ranges \[first,last) and \[result, result + (last - first)) shall not overlap.
 Exemplo:
-cp`
+```cpp
 #include <thrust/binary_search.h>
 #include <thrust/device_vector.h>
 ...
@@ -353,6 +354,7 @@ thrust::upper_bound(input.begin(), input.end(),
                     output.begin());
 // output is now [1, 1, 2, 2, 5, 5]
 ```
+
 ```cpp
 _host__ __device__ OutputIterator thrust::adjacent_difference 	( const thrust::detail::execution_policy_base< DerivedPolicy > &  	exec,
 		InputIterator  	first,
