@@ -531,6 +531,7 @@ Histogram
              histogram  0 1 6 12 4 9 6 0 2 
 ```
 
-## Trabalho para casa ##
-Você encontrará no diretório  /usr/local/cuda/cuda9-installed-samples/NVIDIA_CUDA-9.0_Samples/6_Advanced/radixSortThrust uma implementação de Radix Sort em paralelo usando Thrust. Comente o arquivo .cu e apresente-o na última aula. O trabalho pode ser feito em duplas. 
+## Trabalho para dia 4 de dezembro ##
+Laura e Mauro: Você encontrará no diretório  /usr/local/cuda/cuda9-installed-samples/NVIDIA_CUDA-9.0_Samples/6_Advanced/radixSortThrust uma implementação de Radix Sort em paralelo usando Thrust. Comente o arquivo .cu e apresente-o na última aula. O trabalho pode ser feito em duplas. 
+Daniel e Taís: Escolher um problema do diretório  /usr/local/cuda/cuda9-installed-samples/NVIDIA_CUDA-9.0_Samples/ ou da pasta Trabalhos escritos da disciplina (no ava) e apresentar em sala.
 
