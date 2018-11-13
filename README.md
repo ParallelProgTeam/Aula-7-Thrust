@@ -283,7 +283,7 @@ Até agora, lidamos apenas com iteradores básicos que permitem ao Thrust percor
 O mais simples do grupo, **constant_iterator**, é simplesmente um iterador que retorna o mesmo valor sempre que o desreferimos. Ele permite gerar uma sequência de valores crescentes. Nesse exemplo se inicializa um counting_iterator com o valor 10 e se acessa como se fosse um array.
 
 ## Counting iterator
-´´´cpp
+```cpp
 #include <iostream>
 #include <thrust/iterator/counting_iterator.h>
 #include <thrust/reduce.h>
@@ -302,7 +302,7 @@ int main() {
   
   return 0;
 }
-´´´
+```
 
 <!-- O **transform_iterator** nos permite aplicar a técnica de combinar algoritmos separados, sem precisar depender do Thrust para fornecer uma versão especial do algoritmo transform_xxx. Essa tarefa mostra outra maneira de fundir uma transformação com uma redução, desta vez com apenas redução simples aplicada a um transform_iterator.
 O exemplo a seguir imprime todos os elementos no vetor de valores, depois de fixá-los entre 0 e 100.
@@ -330,7 +330,7 @@ Template Parameters
 Precondition
     The ranges \[first,last) and \[result, result + (last - first)) shall not overlap.
 Exemplo:
-´´´cpp
+cp`
 #include <thrust/binary_search.h>
 #include <thrust/device_vector.h>
 ...
@@ -352,19 +352,20 @@ thrust::upper_bound(input.begin(), input.end(),
                     values.begin(), values.end(),
                     output.begin());
 // output is now [1, 1, 2, 2, 5, 5]
-
+```
+```cpp
 _host__ __device__ OutputIterator thrust::adjacent_difference 	( const thrust::detail::execution_policy_base< DerivedPolicy > &  	exec,
 		InputIterator  	first,
 		InputIterator  	last,
 		OutputIterator  	result 
 	) 		
-´´´
+```
 	
 adjacent_difference calcula as diferenças dos elementos adjacentes no intervalo \[first, last\]. Ou seja, \*first é atribuído a \*result e, para cada iterador i no intervalo \[first + 1, last\], a diferença de \*i e \*(i - 1) é designada para \*(result + (i - first)).
 
 O trecho de código a seguir demonstra como usar adjacent_difference para calcular a diferença entre elementos adjacentes de um intervalo usando a política de execução thrust::device:
 
-´´´cpp
+```cpp
 #include <thrust/adjacent_difference.h>
 #include <thrust/device_vector.h>
 #include <thrust/execution_policy.h>
@@ -374,7 +375,7 @@ thrust::device_vector<int> d_data(h_data, h_data + 8);
 thrust::device_vector<int> d_result(8);
 thrust::adjacent_difference(thrust::device, d_data.begin(), d_data.end(), d_result.begin());
 // d_result is now [1, 1, -1, 1, -1, 1, -1, 1]
-´´´
+```
 	
 Veja mais informação aqui: https://developer.download.nvidia.com/CUDA/training/introductiontothrust.pdf
 e nos exemplos no Moodle.
