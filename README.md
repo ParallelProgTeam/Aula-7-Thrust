@@ -375,6 +375,8 @@ thrust::device_vector<int> d_result(8);
 thrust::adjacent_difference(thrust::device, d_data.begin(), d_data.end(), d_result.begin());
 // d_result is now [1, 1, -1, 1, -1, 1, -1, 1]
 ´´´
+Veja mais informação aqui: https://developer.download.nvidia.com/CUDA/training/introductiontothrust.pdf
+e nos exemplos no Moodle.
 
 ## Exercício: Histograma
 O objetivo deste laboratório é implementar um algoritmo de histograma para uma matriz de entrada de inteiros. Essa abordagem compõe várias etapas algorítmicas distintas para calcular um histograma, o que torna o Thrust uma ferramenta valiosa para sua implementação.
