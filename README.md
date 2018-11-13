@@ -142,8 +142,8 @@ Um functor é um "objeto de função", que é um objeto que pode ser chamado com
 
 Existem algumas maneiras de usar um functor. Um deles é criá-lo como se fosse um objeto normal como este:
 ```cpp
-thrust :: modulus <float> modulusFunctor (...); // Crie o functor, se necessário, passe qualquer argumento para o construtor.
-float result = modulusFunctor (4.0, 2.0); // Use o functor como uma função regular
+thrust :: modulus <float> modulusFunctor (...); // Cria o functor, se necessário, passe qualquer argumento para o construtor.
+float result = modulusFunctor (4.0, 2.0); // Usa o functor como uma função regular
 ...
 ```
 O segundo método é chamar o construtor diretamente em uma lista de argumentos para outra função:
@@ -318,6 +318,9 @@ Uma desvantagem de transform_iterator e zip_iterator é que pode ser complicado 
 Seu objetivo nesta tarefa é modificar task4.cu e escrever o código para implementar cada tipo de iterador. Os diferentes tipos de iteradores são divididos em três funções - não há necessidade de modificar a função main (). Se quiser, você pode comentar o interior das funções que você ainda precisa implementar enquanto se concentra em uma. -->
 
 *upper_bound* é uma versão vetorizada de uma busca binária: para cada iterador v em \[values_first, values_last) tenta encontrar o valor  \*v em um intervalo ordenado  \[first, last). Returna o índice da última posaição onde o valor poderia ser inserido sem violar a ordenação.
+Exemplo:
+```cpp
+/*
 Parameters
     first	The beginning of the ordered sequence.
     last	The end of the ordered sequence.
@@ -329,9 +332,8 @@ Template Parameters
     InputIterator	is a model of Input Iterator. and InputIterator's value_type is LessThanComparable.
     OutputIterator	is a model of Output Iterator. and ForwardIterator's difference_type is convertible to OutputIterator's value_type.
 Precondition
-    The ranges \[first,last) and \[result, result + (last - first)) shall not overlap.
-Exemplo:
-```cpp
+    The ranges [first,last) and [result, result + (last - first)) shall not overlap.
+*/
 #include <thrust/binary_search.h>
 #include <thrust/device_vector.h>
 ...
