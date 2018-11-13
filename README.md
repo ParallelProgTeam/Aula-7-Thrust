@@ -61,7 +61,7 @@ int main(void)
 ```
 Salve seu programa com extensão .cu e compile-o com o 
 ```bash
-nvcc -O2 -arch = sm_30 task3 / task3.cu -run
+nvcc programa.cu -O2 -arch=sm_35 executavel -run
 ```
 Repare que elementos individuais de um *device_vector* podem ser acessados usando **[ ]**. Entretanto, já que esses acessos requerem chamadas a cudaMemcpy, devem ser usados com cuidado. Iremos estudar formas mais eficientes posteriormente. 
 
