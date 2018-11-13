@@ -316,7 +316,7 @@ thrust :: for_each (thrust :: make_zip_iterator (thrust :: make_tuple (A. begin 
 Uma desvantagem de transform_iterator e zip_iterator é que pode ser complicado especificar o tipo completo do iterador, o que pode ser bastante demorado. Por esse motivo, é uma prática comum simplesmente colocar a chamada em make_transform_iterator ou make_zip_iterator nos argumentos do algoritmo que está sendo invocado.
 Seu objetivo nesta tarefa é modificar task4.cu e escrever o código para implementar cada tipo de iterador. Os diferentes tipos de iteradores são divididos em três funções - não há necessidade de modificar a função main (). Se quiser, você pode comentar o interior das funções que você ainda precisa implementar enquanto se concentra em uma. -->
 
-*upper_bound* é uma versão vetorizada de uma busca binária: para cada iterador v em [values_first, values_last) tenta encontrar o valor  *v em um intervalo ordenado  [first, last). Returna o índice da última posaição onde o valor poderia ser inserido sem violar a ordenação.
+*upper_bound* é uma versão vetorizada de uma busca binária: para cada iterador v em \[values_first, values_last) tenta encontrar o valor  \*v em um intervalo ordenado  \[first, last). Returna o índice da última posaição onde o valor poderia ser inserido sem violar a ordenação.
 Parameters
     first	The beginning of the ordered sequence.
     last	The end of the ordered sequence.
@@ -328,7 +328,7 @@ Template Parameters
     InputIterator	is a model of Input Iterator. and InputIterator's value_type is LessThanComparable.
     OutputIterator	is a model of Output Iterator. and ForwardIterator's difference_type is convertible to OutputIterator's value_type.
 Precondition
-    The ranges [first,last) and [result, result + (last - first)) shall not overlap.
+    The ranges \[first,last) and \[result, result + (last - first)) shall not overlap.
 Exemplo:
 ´´´cpp
 #include <thrust/binary_search.h>
@@ -352,7 +352,7 @@ thrust::upper_bound(input.begin(), input.end(),
                     values.begin(), values.end(),
                     output.begin());
 // output is now [1, 1, 2, 2, 5, 5]
-´´´
+
 _host__ __device__ OutputIterator thrust::adjacent_difference 	( const thrust::detail::execution_policy_base< DerivedPolicy > &  	exec,
 		InputIterator  	first,
 		InputIterator  	last,
@@ -360,7 +360,7 @@ _host__ __device__ OutputIterator thrust::adjacent_difference 	( const thrust::d
 	) 		
 ´´´
 	
-adjacent_difference calcula as diferenças dos elementos adjacentes no intervalo [first, last]. Ou seja, \*first é atribuído a \*result e, para cada iterador i no intervalo [first + 1, last], a diferença de \*i e \*(i - 1) é designada para \*(result + (i - first)).
+adjacent_difference calcula as diferenças dos elementos adjacentes no intervalo \[first, last\]. Ou seja, \*first é atribuído a \*result e, para cada iterador i no intervalo \[first + 1, last\], a diferença de \*i e \*(i - 1) é designada para \*(result + (i - first)).
 
 O trecho de código a seguir demonstra como usar adjacent_difference para calcular a diferença entre elementos adjacentes de um intervalo usando a política de execução thrust::device:
 
@@ -368,13 +368,14 @@ O trecho de código a seguir demonstra como usar adjacent_difference para calcul
 #include <thrust/adjacent_difference.h>
 #include <thrust/device_vector.h>
 #include <thrust/execution_policy.h>
-...
+
 int h_data[8] = {1, 2, 1, 2, 1, 2, 1, 2};
 thrust::device_vector<int> d_data(h_data, h_data + 8);
 thrust::device_vector<int> d_result(8);
 thrust::adjacent_difference(thrust::device, d_data.begin(), d_data.end(), d_result.begin());
 // d_result is now [1, 1, -1, 1, -1, 1, -1, 1]
 ´´´
+	
 Veja mais informação aqui: https://developer.download.nvidia.com/CUDA/training/introductiontothrust.pdf
 e nos exemplos no Moodle.
 
