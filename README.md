@@ -137,7 +137,8 @@ Conseguiu? Parabéns! Você executou código na GPU usando Thrust, sem precisar 
 
 A maioria das funções Thrust são planejadas para serem *building blocks* (blocos de construção), permitindo que o programador construa algoritmos complexos sobre elas. O objetivo desta tarefa é oferecer a você mais experiência usando funções e iteradores Thrust e expor você a funções adicionais disponíveis.
 
-Além disso, você começará a trabalhar com "functors" nessa tarefa. Um functor é um "objeto de função", que é um objeto que pode ser chamado como se fosse uma função comum. Em C++, um functor é apenas uma classe ou estrutura que define o operador de chamada de função. Por serem objetos, functores podem ser passados (junto com seu estado) para outras funções como parâmetro. Thrust vem com um punhado de functores predefinidos, um dos quais vamos usar nesta tarefa. Na próxima tarefa, veremos como escrever seu próprio functor e usá-lo em um algoritmo Thrust.
+<!--Além disso, você começará a trabalhar com "functors" nessa tarefa. -->
+Um functor é um "objeto de função", que é um objeto que pode ser chamado como se fosse uma função comum. Em C++, um functor é apenas uma classe ou estrutura que define o operador de chamada de função. Por serem objetos, functores podem ser passados (junto com seu estado) para outras funções como parâmetro. Thrust vem com um punhado de functores predefinidos, um dos quais vamos usar nesta tarefa. Na próxima tarefa, veremos como escrever seu próprio functor e usá-lo em um algoritmo Thrust.
 
 Existem algumas maneiras de usar um functor. Um deles é criá-lo como se fosse um objeto normal como este:
 ´´´cpp
@@ -523,5 +524,5 @@ Histogram
 ```
 
 ## Trabalho para casa ##
-Você encontrará no diretório  /usr/local/cuda/cuda9-installed-samples/NVIDIA_CUDA-9.0_Samples/6_Advanced/radixSortThrust uma implementação de Radix Sort em paralelo usando Thrust. Comente o arquivo .cu e apresente-o na próxima aula. O trabalho pode ser feito em duplas. 
+Você encontrará no diretório  /usr/local/cuda/cuda9-installed-samples/NVIDIA_CUDA-9.0_Samples/6_Advanced/radixSortThrust uma implementação de Radix Sort em paralelo usando Thrust. Comente o arquivo .cu e apresente-o na última aula. O trabalho pode ser feito em duplas. 
 
