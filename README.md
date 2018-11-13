@@ -387,7 +387,7 @@ max (entrada) + 1
 
 ### Abordagem de ordenação do histograma
 Primeiro, classifique os dados de entrada usando thrust :: sort. Continuando com o exemplo original:
-classificado = [0 0 1 1 1 1 1 2 2 2 4]
+ordenado = [0 0 1 1 1 1 1 2 2 2 4]
 Determine o número de bins inspecionando o último elemento da lista e adicionando 1:
 num_bins = sorted.back () + 1
 
